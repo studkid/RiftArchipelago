@@ -2,6 +2,7 @@ using UnityEngine;
 using HarmonyLib;
 using Shared.Title;
 using Shared.MenuOptions;
+using Shared.RhythmEngine;
 
 namespace RiftArchipelago.Patches{
     [HarmonyPatch(typeof(MainMenuManager), "Awake")]
@@ -25,6 +26,7 @@ namespace RiftArchipelago.Patches{
         private static readonly AccessTools.FieldRef<MainMenuManager, OptionsScreenInputController> _stageInputRecordRef =
             AccessTools.FieldRefAccess<MainMenuManager, OptionsScreenInputController>("_inputController");
         private static OptionsScreenInputController _inputController = null;
+        private static bool _wasFocusedLastFrame = false;
 
         [HarmonyPrefix]
         public static void PreFix(MainMenuManager __instance) {
@@ -42,8 +44,10 @@ namespace RiftArchipelago.Patches{
 
             if (ArchipelagoUI.AnyTextFieldFocused) {
                 _inputController.IsInputDisabled = true;
-            } else {
+                _wasFocusedLastFrame = true;
+            } else if (_wasFocusedLastFrame) {
                 _inputController.IsInputDisabled = false;
+                _wasFocusedLastFrame = false;
             }
         }
     }
