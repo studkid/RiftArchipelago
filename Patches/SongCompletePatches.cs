@@ -124,7 +124,7 @@ namespace RiftArchipelago.Patches
             }
 
             // Print out for debugging purposes
-            RiftAP._log.LogInfo($"Song Completed! Stage: {stageDisplayName} | Level ID: {levelId} | Difficulty: {_stageScenePayload.GetLevelDifficulty()}");
+            RiftAP._log.LogInfo($"Song Completed! Stage: {stageDisplayName} | Level ID: {levelId} | Difficulty: {_stageScenePayload.GetLevelDifficulty()} | Remix Mode: {_isRemixMode}");
 
             // Full combo check
             if (ArchipelagoClient.slotData.fullComboNeeded && !isFullCombo) {
@@ -145,7 +145,7 @@ namespace RiftArchipelago.Patches
         public static void AP_RRLocationSend(string stageDisplayName, string levelId, Difficulty difficulty, bool isRemixMode) {
             long locId = -1;
 
-            if (!ArchipelagoClient.slotData.remix || !isRemixMode){
+            if (!ArchipelagoClient.slotData.remix || !isRemixMode) {
                 if (stageDisplayName == ArchipelagoClient.slotData.goalSong)
                 {
                     ArchipelagoClient.GoalGame();
@@ -154,8 +154,7 @@ namespace RiftArchipelago.Patches
                 locId = ArchipelagoClient.session.Locations.GetLocationIdFromName("Rift of the Necrodancer", stageDisplayName + "-0");
             }
             else {
-                if (stageDisplayName + " (Remix)" == ArchipelagoClient.slotData.goalSong)
-                {
+                if (stageDisplayName + " (Remix)" == ArchipelagoClient.slotData.goalSong) {
                     ArchipelagoClient.GoalGame();
                 }
 
