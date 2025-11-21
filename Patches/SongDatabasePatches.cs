@@ -48,7 +48,7 @@ namespace RiftArchipelago.Patches{
 
                     diff.UnlockCriteria.Remix = new UnlockCriteria();
                     // RiftAP._log.LogInfo($"{song.TrackName}: {!ItemHandler.dlcSongUnlocked.Contains(song.TrackName)}, {!ArchipelagoClient.slotData.remix}, {!ItemHandler.dlcRemixUnlocked.Contains(song.TrackName)}");
-                    if((!ItemHandler.dlcSongUnlocked.Contains(song.TrackName) && !ArchipelagoClient.slotData.remix) || !ItemHandler.dlcRemixUnlocked.Contains(song.TrackName)) {
+                    if((!ItemHandler.dlcSongUnlocked.Contains(song.TrackName) && ArchipelagoClient.slotData.remix) || !ItemHandler.dlcRemixUnlocked.Contains(song.TrackName)) {
                         diff.UnlockCriteria.Remix.Type = UnlockCriteriaType.AlwaysLocked;
                     }
                 }
