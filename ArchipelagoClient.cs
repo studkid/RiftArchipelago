@@ -56,7 +56,7 @@ public static class ArchipelagoClient {
         }
 
         session = ArchipelagoSessionFactory.CreateSession(apInfo.address);
-        deathLinkService = session.CreateDeathLinkService();
+        // deathLinkService = session.CreateDeathLinkService();
         
         LoginResult loginResult = session.TryConnectAndLogin(
             GAME_NAME,
@@ -112,29 +112,29 @@ public static class ArchipelagoClient {
         }
     }
 
-    public static void SetDeathLink() {
-        if(deathLink == DeathLinkState.On) {
-            deathLink = DeathLinkState.Off;
-            deathLinkService.DisableDeathLink();
-            return;
-        }
+    // public static void SetDeathLink() {
+    //     if(deathLink == DeathLinkState.On) {
+    //         deathLink = DeathLinkState.Off;
+    //         deathLinkService.DisableDeathLink();
+    //         return;
+    //     }
 
-        if(deathLink == DeathLinkState.Off) {
-            deathLinkService.EnableDeathLink();
-        }
-        deathLink++;
-    }
+    //     if(deathLink == DeathLinkState.Off) {
+    //         deathLinkService.EnableDeathLink();
+    //     }
+    //     deathLink++;
+    // }
 
-    public static void SendDeathLink() {
-        if(deathLinkCooldown > 0) return;
+    // public static void SendDeathLink() {
+    //     if(deathLinkCooldown > 0) return;
 
-        Random rnd = new Random();
-        deathLinkService.SendDeathLink(new DeathLink(apInfo.slot, deathLinkMessages[rnd.Next(0, deathLinkMessages.Length)]));
-    }
+    //     Random rnd = new Random();
+    //     deathLinkService.SendDeathLink(new DeathLink(apInfo.slot, deathLinkMessages[rnd.Next(0, deathLinkMessages.Length)]));
+    // }
 
-    private static void OndeathLinkRecieved(DeathLink deathLink) {
-        RiftAP._log.LogInfo($"Deathlink Recieved: {deathLink.Source} {deathLink.Cause}");
+    // private static void OndeathLinkRecieved(DeathLink deathLink) {
+    //     RiftAP._log.LogInfo($"Deathlink Recieved: {deathLink.Source} {deathLink.Cause}");
 
-        // if(rrStageController == null || rrStageController._isPlayerBeenDefeated)
-    }
+    //     // if(rrStageController == null || rrStageController._isPlayerBeenDefeated)
+    // }
 }
