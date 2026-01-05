@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using BepInEx.Logging;
 
 namespace RiftArchipelago {
 
@@ -15,28 +16,76 @@ namespace RiftArchipelago {
 
         public SlotData(Dictionary<string, object> slotData) {
             if(slotData.TryGetValue("diamondWinCount", out var diamond_goal)) {
-                diamondGoal = ParseInt(diamond_goal);
+                try {
+                    diamondGoal = ParseInt(diamond_goal);
+                }
+                catch {
+                    RiftAP._log.LogError("Failed to get diamondGoal from Slot Data.  Something went very wrong");
+                    diamondGoal = -1;
+                }
             }
             if(slotData.TryGetValue("victoryLocation", out var victory)) {
-                goalSong = (string) victory;
+                try {
+                    goalSong = (string) victory;
+                }
+                catch {
+                    RiftAP._log.LogError("Failed to get victoryLocation from Slot Data.  Something went very wrong");
+                    goalSong = "Goal Song Invalid";
+                }
             }
             if(slotData.TryGetValue("victoryType", out var victory_type)) {
-                goalType = (string) victory_type;
+                try {
+                    goalType = (string) victory_type;
+                }
+                catch {
+                    RiftAP._log.LogError("Failed to get victoryType from Slot Data.  Something went very wrong");
+                    goalType = "Rift";
+                }
             }
             if(slotData.TryGetValue("remixes", out var remixes)) {
+                try {
                 remix = Convert.ToBoolean(remixes);
+                }
+                catch {
+                    RiftAP._log.LogError("Failed to get remixes from Slot Data.  Something went very wrong");
+                    remix = false;
+                }
             }
             if(slotData.TryGetValue("minigameMode", out var mg_mode)) {
-                mgMode = ParseInt(mg_mode);
+                try {
+                    mgMode = ParseInt(mg_mode);
+                }
+                catch {
+                    RiftAP._log.LogError("Failed to get minigameMode from Slot Data.  Something went very wrong");
+                    mgMode = 0;
+                }
             }
             if(slotData.TryGetValue("bossMode", out var boss_mode)) {
-                bbMode = ParseInt(boss_mode);
+                try{
+                    bbMode = ParseInt(boss_mode);
+                }
+                catch {
+                    RiftAP._log.LogError("Failed to get bossMode from Slot Data.  Something went very wrong");
+                    bbMode = 0;
+                }
             }
             if (slotData.TryGetValue("gradeNeeded", out var grade_needed)) {
-                gradeNeeded = MapObjectToGrade(grade_needed);
+                try{
+                    gradeNeeded = MapObjectToGrade(grade_needed);
+                }
+                catch {
+                    RiftAP._log.LogError("Failed to get gradeNeeded from Slot Data.  Something went very wrong");
+                    gradeNeeded = Grade.Any;
+                }
             }
             if (slotData.TryGetValue("fullComboNeeded", out var fc_needed)) {
-                fullComboNeeded = Convert.ToBoolean(fc_needed);
+                try {
+                    fullComboNeeded = Convert.ToBoolean(fc_needed);
+                }
+                catch {
+                    RiftAP._log.LogError("Failed to get fullComboNeeded from Slot Data.  Something went very wrong");
+                    fullComboNeeded = false;
+                }
             }
         }
 
