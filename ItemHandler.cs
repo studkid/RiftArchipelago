@@ -101,7 +101,7 @@ namespace RiftArchipelago{
                 }
 
                 else if(goalType == "Remix") {
-                    UnlockExtra(goalSong);
+                    UnlockRemix(goalSong.Substring(0, goalSong.Length - 8));
                 }
 
                 else {
