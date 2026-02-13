@@ -8,6 +8,7 @@ using MonoMod.Utils;
 using Shared.TrackData;
 using Shared.PlayerData;
 using Shared;
+using RiftArchipelago.Helpers;
 
 namespace RiftArchipelago.Patches{
     [HarmonyPatch(typeof(SongDatabase), "InitializeDictionary")]
@@ -17,7 +18,7 @@ namespace RiftArchipelago.Patches{
             ItemHandler.songDatabaseDict = ____songDatabaseDict;
         }
     }
-
+    
     [HarmonyPatch(typeof(TrackSelectionSceneController), "GetTrackMetadataFromDatabase")]
     public static class GetDLCTracks {
         [HarmonyPrefix]
@@ -55,7 +56,7 @@ namespace RiftArchipelago.Patches{
             }
         }
     }
-
+    
     [HarmonyPatch(typeof(MGTrackDatabase), "GetTrackMetaDatas")]
     public static class MGDatabase {
         [HarmonyPostfix]
@@ -95,6 +96,28 @@ namespace RiftArchipelago.Patches{
                     __result[i].UnlockCriteria.Type = UnlockCriteriaType.AlwaysLocked;
                 }
             }
+        }
+    }
+
+    [HarmonyPatch(typeof(CustomTracksSelectionSceneController), "HandleTrackMetadataReSort")]
+    public static class GetCustomTracks {
+        [HarmonyPrefix]
+        public static void Prefix(ref List<ITrackMetadata> ____customTrackMetadatas) {
+            // TODO Make this not run every single time this method is called
+            CustomSongHelpers.saveCustomData(____customTrackMetadatas);
+            if (!ArchipelagoClient.isAuthenticated) return;
+
+            // ____customTrackMetadatas.Clear();
+            // foreach(LocalTrackMetadata song in ____customTrackMetadatas) {
+            //     RiftAP._log.LogInfo(song.LevelId);
+            //     foreach(LocalTrackDifficulty diff in song.DifficultyInformation) {
+            //         diff.UnlockCriteria = new TrackUnlockCriteria();
+            //         diff.UnlockCriteria.Main = new UnlockCriteria();
+            //         if(true) {
+            //             diff.UnlockCriteria.Main.Type = UnlockCriteriaType.AlwaysLocked;
+            //         }
+            //     }
+            // }
         }
     }
 }
