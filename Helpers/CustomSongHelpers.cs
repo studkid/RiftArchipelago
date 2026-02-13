@@ -21,10 +21,10 @@ namespace RiftArchipelago.Helpers {
                         name = song.TrackName,
                         apId = song.LevelId.Substring(2),
                         levelId = song.LevelId,
-                        easy = song.GetDifficulty(Difficulty.Easy)?.Intensity ?? -1,
-                        medium = song.GetDifficulty(Difficulty.Medium)?.Intensity ?? -1,
-                        hard = song.GetDifficulty(Difficulty.Hard)?.Intensity ?? -1,
-                        impossible = song.GetDifficulty(Difficulty.Impossible)?.Intensity ?? -1,
+                        easy = song.GetDifficulty(Difficulty.Easy)?.Intensity ?? null,
+                        medium = song.GetDifficulty(Difficulty.Medium)?.Intensity ?? null,
+                        hard = song.GetDifficulty(Difficulty.Hard)?.Intensity ?? null,
+                        impossible = song.GetDifficulty(Difficulty.Impossible)?.Intensity ?? null,
                     });
                 }
                 else {
@@ -32,10 +32,10 @@ namespace RiftArchipelago.Helpers {
                         name = song.TrackName,
                         apId = Convert.ToString(1 + localSongDatas.Count),
                         levelId = song.LevelId,
-                        easy = song.GetDifficulty(Difficulty.Easy)?.Intensity ?? -1,
-                        medium = song.GetDifficulty(Difficulty.Medium)?.Intensity ?? -1,
-                        hard = song.GetDifficulty(Difficulty.Hard)?.Intensity ?? -1,
-                        impossible = song.GetDifficulty(Difficulty.Impossible)?.Intensity ?? -1,
+                        easy = song.GetDifficulty(Difficulty.Easy)?.Intensity ?? null,
+                        medium = song.GetDifficulty(Difficulty.Medium)?.Intensity ?? null,
+                        hard = song.GetDifficulty(Difficulty.Hard)?.Intensity ?? null,
+                        impossible = song.GetDifficulty(Difficulty.Impossible)?.Intensity ?? null,
                     });
                 }
             }
