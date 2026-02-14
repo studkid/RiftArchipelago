@@ -44,7 +44,7 @@ namespace RiftArchipelago.Patches {
         [HarmonyPostfix]
         public static void PostFix(RRStageController __instance, ref string ____customTrackAudioFilePath) {
             // Invalid if not connected to Archipelago
-            if (!ArchipelagoClient.isAuthenticated) return;
+            if (!ArchipelagoClient.isAuthenticated || ArchipelagoClient.freePlay) return;
             try {
                 if (__instance == null) {
                     RiftAP._log.LogError("RRStageEnd PostFix: __instance == null");

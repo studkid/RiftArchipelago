@@ -33,7 +33,7 @@ namespace RiftArchipelago.Patches{
             //     i++;
             // }
 
-            if (!ArchipelagoClient.isAuthenticated) return;
+            if (!ArchipelagoClient.isAuthenticated || ArchipelagoClient.freePlay) return;
 
             foreach(LocalTrackMetadata song in ____dynamicMetadataMap.Values) {
                 foreach(LocalTrackDifficulty diff in song.DifficultyInformation) {
@@ -57,7 +57,7 @@ namespace RiftArchipelago.Patches{
     public static class MGDatabase {
         [HarmonyPostfix]
         public static void PostFix(ref MGTrackMetaData[] __result) {
-            if (!ArchipelagoClient.isAuthenticated) return;
+            if (!ArchipelagoClient.isAuthenticated || ArchipelagoClient.freePlay) return;
 
             for(int i = 0; i < __result.Length; i++) {
                 MGTrackMetaData song = __result[i];
@@ -78,7 +78,7 @@ namespace RiftArchipelago.Patches{
     public static class BBDatabase {
         [HarmonyPostfix]
         public static void PostFix(ref BBTrackMetaData[] __result) {
-            if (!ArchipelagoClient.isAuthenticated) return;
+            if (!ArchipelagoClient.isAuthenticated || ArchipelagoClient.freePlay) return;
 
             for(int i = 0; i < __result.Length; i++) {
                 BBTrackMetaData song = __result[i];
@@ -101,7 +101,7 @@ namespace RiftArchipelago.Patches{
         public static void Prefix(ref List<ITrackMetadata> ____customTrackMetadatas) {
             // TODO Make this not run every single time this method is called
             CustomSongHelpers.saveCustomData(____customTrackMetadatas);
-            if (!ArchipelagoClient.isAuthenticated) return;
+            if (!ArchipelagoClient.isAuthenticated || ArchipelagoClient.freePlay) return;
             List<ITrackMetadata> refTrackList = new List<ITrackMetadata>(____customTrackMetadatas);
 
             foreach(LocalTrackMetadata song in refTrackList) {

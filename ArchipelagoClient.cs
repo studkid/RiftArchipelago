@@ -35,6 +35,7 @@ public static class ArchipelagoClient {
     public static DeathLinkService deathLinkService;
     public static int deathLinkCooldown = 0;
     public static RRStageController rrStageController;
+    public static bool freePlay = false;
 
     public enum DeathLinkState {
         Off = 0,
@@ -83,6 +84,7 @@ public static class ArchipelagoClient {
 
     public static async void Disconnect() {
         if(session is { Socket.Connected: true }) await session.Socket.DisconnectAsync(); 
+        ItemHandler.ResetEverything();
         isAuthenticated = false;
         slotData = null;
     }

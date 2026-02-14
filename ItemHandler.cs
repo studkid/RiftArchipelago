@@ -83,6 +83,41 @@ namespace RiftArchipelago{
             }
         }
 
+        public static void ResetLocked(bool freePlay) {
+            if(freePlay) {
+                foreach(SongDatabaseData song in songDatabaseDict.Values) {
+                    foreach(DifficultyInformation diff in song.DifficultyInformation) {
+                        diff.UnlockCriteria.Type = UnlockCriteriaType.TotalDiamonds;
+                        diff.RemixUnlockCriteria.Type = UnlockCriteriaType.TotalDiamonds;
+                    }
+                }
+            }
+            else{
+                foreach(SongDatabaseData song in songDatabaseDict.Values) {
+                    foreach(DifficultyInformation diff in song.DifficultyInformation) {
+                        diff.UnlockCriteria.Type = UnlockCriteriaType.AlwaysLocked;
+                        diff.RemixUnlockCriteria.Type = UnlockCriteriaType.AlwaysLocked;
+                    }
+                }
+            }
+        }
+
+        public static void ResetEverything() {
+            diamondCount = 0;
+            dlcSongUnlocked = [];
+            dlcRemixUnlocked = [];
+            customUnlocked = [];
+            extraMedium = [];
+            extraHard = [];
+
+            foreach(SongDatabaseData song in songDatabaseDict.Values) {
+                foreach(DifficultyInformation diff in song.DifficultyInformation) {
+                    diff.UnlockCriteria.Type = UnlockCriteriaType.TotalDiamonds;
+                    diff.RemixUnlockCriteria.Type = UnlockCriteriaType.TotalDiamonds;
+                }
+            }
+        }
+
         public static void AddDiamond() {
             diamondCount += 1;
             RiftAP._log.LogInfo($"AddDiamond: Adding Diamond | New Total: {diamondCount}");

@@ -167,9 +167,10 @@ namespace RiftArchipelago{
 
                 GUI.Label(new Rect(LeftPadding, 40, contentWidth, LineHeight), "Goal Song: " + ArchipelagoClient.slotData.goalSong);
                 
-                // if(GUI.Button(new Rect(LeftPadding, 60, 150, LineHeight), "Death Link: " + ArchipelagoClient.deathLink)) {
-                //     ArchipelagoClient.SetDeathLink();
-                // }
+                if(GUI.Button(new Rect(LeftPadding, 60, 150, LineHeight), "Free Play: " + ArchipelagoClient.freePlay)) {
+                    ArchipelagoClient.freePlay = !ArchipelagoClient.freePlay;
+                    ItemHandler.ResetLocked(ArchipelagoClient.freePlay);
+                }
 
                 if(GUI.Button(new Rect(LeftPadding, 85, 100, LineHeight), "Disconnect")) {
                     ArchipelagoClient.Disconnect();
