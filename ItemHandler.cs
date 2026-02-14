@@ -1,12 +1,6 @@
-using System;
 using Shared.PlayerData;
 using Shared.TrackSelection;
-using System.Reflection;
 using System.Collections.Generic;
-using BepInEx.Logging;
-using HarmonyLib;
-using Shared.TrackData;
-using Shared;
 
 namespace RiftArchipelago{
     public static class ItemHandler {
@@ -70,6 +64,7 @@ namespace RiftArchipelago{
         public static Dictionary<string, SongDatabaseData> songDatabaseDict;
         public static List<string> dlcSongUnlocked = [];
         public static List<string> dlcRemixUnlocked = [];
+        public static List<string> customUnlocked = [];
         public static List<string> extraMedium = [];
         public static List<string> extraHard = [];
         public static bool databaseInit = false;
@@ -166,6 +161,11 @@ namespace RiftArchipelago{
                 extraMedium.Add(value);
                 extraHard.Add(value);
             }
+        }
+
+        public static void UnlockCustom(string songName) {
+            RiftAP._log.LogInfo($"UnlockCustom: Unlocking \"{songName}\"");
+            customUnlocked.Add(songName);
         }
     }
 }

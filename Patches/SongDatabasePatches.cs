@@ -1,10 +1,6 @@
 using HarmonyLib;
 using Shared.TrackSelection;
 using System.Collections.Generic;
-using System;
-using System.IO;
-using Shared.DLC;
-using MonoMod.Utils;
 using Shared.TrackData;
 using Shared.PlayerData;
 using Shared;
@@ -106,18 +102,17 @@ namespace RiftArchipelago.Patches{
             // TODO Make this not run every single time this method is called
             CustomSongHelpers.saveCustomData(____customTrackMetadatas);
             if (!ArchipelagoClient.isAuthenticated) return;
+            List<ITrackMetadata> refTrackList = new List<ITrackMetadata>(____customTrackMetadatas);
 
-            // ____customTrackMetadatas.Clear();
-            // foreach(LocalTrackMetadata song in ____customTrackMetadatas) {
-            //     RiftAP._log.LogInfo(song.LevelId);
-            //     foreach(LocalTrackDifficulty diff in song.DifficultyInformation) {
-            //         diff.UnlockCriteria = new TrackUnlockCriteria();
-            //         diff.UnlockCriteria.Main = new UnlockCriteria();
-            //         if(true) {
-            //             diff.UnlockCriteria.Main.Type = UnlockCriteriaType.AlwaysLocked;
-            //         }
-            //     }
-            // }
+            foreach(LocalTrackMetadata song in refTrackList) {
+                string songName = $"{song.TrackName} [{song.LevelId}]"; 
+
+                RiftAP._log.LogInfo($"{song.TrackName} in List: {!ItemHandler.customUnlocked.Contains(songName.Replace("\'", ""))}");
+                if(!ItemHandler.customUnlocked.Contains(songName.Replace("\'", ""))) {
+                    RiftAP._log.LogInfo($"Removing {song.TrackName}");
+                    ____customTrackMetadatas.Remove(song);
+                }
+            }
         }
     }
 }

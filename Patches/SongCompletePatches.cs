@@ -4,22 +4,15 @@ using Shared;
 using System.Threading.Tasks;
 
 using Shared.RhythmEngine;
-using Archipelago.MultiClient.Net.Enums;
-using Archipelago.MultiClient.Net.Packets;
 using Shared.Leaderboard;
-using Shared.TrackSelection;
 using RhythmRift;
-using BossBattles;
-using System.Buffers.Text;
 using System.Collections.Generic;
 using Shared.SceneLoading.Payloads;
 using System.Reflection;
 
-namespace RiftArchipelago.Patches
-{
+namespace RiftArchipelago.Patches {
     [HarmonyPatch(typeof(RRStageController), "CompleteStageAfterAllEnemiesHaveDiedRoutine")]
-    public static class RRCompleteStage
-    {
+    public static class RRCompleteStage {
         //  fast access to private fields on RRStageController
         private static LetterGradeDefinitions _letterGradeDefinitions = null;
         private static readonly AccessTools.FieldRef<RRStageController, StageInputRecord> _stageInputRecordRef =
@@ -49,8 +42,7 @@ namespace RiftArchipelago.Patches
 
         // Runs at the end of the method that handles successfully beating a stage
         [HarmonyPostfix]
-        public static void PostFix(RRStageController __instance)
-        {
+        public static void PostFix(RRStageController __instance, ref string ____customTrackAudioFilePath) {
             // Invalid if not connected to Archipelago
             if (!ArchipelagoClient.isAuthenticated) return;
             try {
@@ -90,10 +82,15 @@ namespace RiftArchipelago.Patches
                 string levelId = _stageScenePayload.GetLevelId();
                 string stageDisplayName = _stageContextInfo.StageDisplayName;
                 bool wasFullCombo = _stageInputRecord.TotalMisses == 0 && _stageInputRecord.TotalErrants == 0;
+                bool isPlayingCustomTrack = !string.IsNullOrWhiteSpace(____customTrackAudioFilePath);
 
                 try {
-                    if (VerifyCompletionRequirements(stageDisplayName, levelId, _stageScenePayload.GetLevelDifficulty(), SlotData.MapObjectToGrade(letter), wasFullCombo, _isRemixMode, false, _wereCheatsUsed)) {
+                    if (VerifyCompletionRequirements(stageDisplayName, levelId, _stageScenePayload.GetLevelDifficulty(), SlotData.MapObjectToGrade(letter), wasFullCombo, _wereCheatsUsed)) {
                         RiftAP._log.LogInfo("Archipelago location verification validated");
+                        if(isPlayingCustomTrack) {
+                            string songName = $"{stageDisplayName} [{levelId}]";
+                            AP_RRLocationSend(songName.Replace("\'", ""), levelId, _stageScenePayload.GetLevelDifficulty(), _isRemixMode);
+                        }
                         AP_RRLocationSend(stageDisplayName, levelId, _stageScenePayload.GetLevelDifficulty(), _isRemixMode);
                     }
                     else {
@@ -110,10 +107,7 @@ namespace RiftArchipelago.Patches
         }
 
         public static bool VerifyCompletionRequirements(string stageDisplayName, string levelId, Difficulty difficulty,
-                                            SlotData.Grade letterGrade, bool isFullCombo, bool isRemixMode, bool isCustom, bool cheatsDetected) {
-            // Invalid since custom songs not implemented yet
-            if (isCustom) return false;
-
+                                            SlotData.Grade letterGrade, bool isFullCombo, bool cheatsDetected) {
             // Valid if golden lute used
             if (cheatsDetected) return true;
 

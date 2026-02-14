@@ -17,7 +17,8 @@ namespace RiftArchipelago.Helpers {
 
             foreach(ITrackMetadata song in metadata) {
                 if(song.LevelId.Substring(0, 2) == "ws") {
-                    workshopSongDatas.Add($"{song.TrackName} [{song.LevelId}]", new customSongData {                      
+                    string songName = $"{song.TrackName} [{song.LevelId}]";
+                    workshopSongDatas.Add(songName.Replace("\'", ""), new customSongData {                      
                         code = song.LevelId.Substring(2),
                         DLC = "Workshop",
                         diff_easy = song.GetDifficulty(Difficulty.Easy)?.Intensity,
@@ -27,7 +28,8 @@ namespace RiftArchipelago.Helpers {
                     });
                 }
                 else {
-                    workshopSongDatas.Add($"{song.TrackName} [{song.LevelId}]", new customSongData {
+                    string songName = $"{song.TrackName} [{song.LevelId}]";
+                    workshopSongDatas.Add(songName.Replace("\'", ""), new customSongData {
                         code = Convert.ToString(1 + localSongs),
                         DLC = "Local",
                         diff_easy = song.GetDifficulty(Difficulty.Easy)?.Intensity,
@@ -35,7 +37,7 @@ namespace RiftArchipelago.Helpers {
                         diff_hard = song.GetDifficulty(Difficulty.Hard)?.Intensity,
                         diff_impossible = song.GetDifficulty(Difficulty.Impossible)?.Intensity,
                     });
-                    localSongs++;
+                    localSongs =+ 2;
                 }
             }
 

@@ -98,17 +98,20 @@ public static class ArchipelagoClient {
         var item = helper.DequeueItem();
         RiftAP._log.LogInfo($"Item Recieved: {item.ItemDisplayName} | ID: {item.ItemId}");
 
-        if(item.ItemId == 1) {
+        if(item.ItemId == 1) { // Diamonds
             ItemHandler.AddDiamond();
         }
-        else if(item.ItemId >= 50 && item.ItemId < 1000) {
+        else if(item.ItemId >= 50 && item.ItemId < 1000) { // Rhythm Rifts
             ItemHandler.UnlockSong(item.ItemName);
         }
-        else if(item.ItemId >= 1000 && item.ItemId < 2000) {;
+        else if(item.ItemId >= 1000 && item.ItemId < 2000) { // Remixes
             ItemHandler.UnlockRemix(item.ItemName.Substring(0, item.ItemName.Length - 8));
         }
-        else if(item.ItemId >= 2000 && item.ItemId < 3000) {
+        else if(item.ItemId >= 2000 && item.ItemId < 3000) { //Minigames/Bosses
             ItemHandler.UnlockExtra(item.ItemName);
+        }
+        else if(item.ItemId >= 5000) { // Custom Rifts
+            ItemHandler.UnlockCustom(item.ItemName);
         }
     }
 
