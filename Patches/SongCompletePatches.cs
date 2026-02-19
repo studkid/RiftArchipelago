@@ -46,68 +46,81 @@ namespace RiftArchipelago.Patches {
 
         // Runs at the end of the method that handles successfully beating a stage
         [HarmonyPostfix]
-        public static void PostFix(RRStageController __instance, ref string ____customTrackAudioFilePath) {
+        public static void PostFix(RRStageController __instance, ref string ____customTrackAudioFilePath, ref IEnumerator __result) {
             // Invalid if not connected to Archipelago
             if (!ArchipelagoClient.isAuthenticated || ArchipelagoClient.freePlay) return;
+
+
+            var original = __result;
+            __result = Wrapper(__instance, ____customTrackAudioFilePath);
+
+            IEnumerator Wrapper(RRStageController __instance, string ____customTrackAudioFilePath) {
+                yield return original;
+
+                TrySendLocation(__instance, ____customTrackAudioFilePath);
+            }
+        }
+
+        public static void TrySendLocation(RRStageController __instance, string ____customTrackAudioFilePath) {
             try {
-                if (__instance == null) {
-                    RiftAP._log.LogError("RRStageEnd PostFix: __instance == null");
-                    return;
-                }
-
-                // Get private fields
-                try {
-                    GetPrivateFields(__instance);
-                }
-                catch (System.Exception ex) {
-                    RiftAP._log.LogError($"Error getting private fields in RRStageEnd PostFix: {ex}");
-                    return;
-                }
-
-                // Double check to ensure no null values
-                if (_letterGradeDefinitions == null || _stageInputRecord == null || _stageScenePayload == null) {
-                    RiftAP._log.LogWarning("RRStageEnd PostFix: One or more private fields are null");
-                    return;
-                }
-
-                // Copy letter grade calculation from the original files
-                float percentage = (float)_stageInputRecord.TotalScore / _stageInputRecord.BaseStageScore * 100f;
-                string letter = _letterGradeDefinitions.GetLetterGradeForPercentage(percentage);
-                if (_isMicroRift && letter != LetterGradeDefinitions.LetterGrades.SS.ToString()) {
-                    List<float> thresholds = _letterGradeDefinitions.GetLetterGradePercentageThresholdsInOrder();
-                    if (thresholds != null && thresholds.Count > 0) {
-                        float num = thresholds[thresholds.Count - 1];
-                        int extraScore = (int)((float)_stageInputRecord.BaseStageScore * num) + 1 - _stageInputRecord.TotalScore;
-                        _stageInputRecord.AddMicroRiftCompletionBonus(extraScore);
-                        letter = LetterGradeDefinitions.LetterGrades.SS.ToString();
+                    if (__instance == null) {
+                        RiftAP._log.LogError("RRStageEnd PostFix: __instance == null");
+                        return;
                     }
-                }
 
-                string levelId = _stageScenePayload.GetLevelId();
-                string stageDisplayName = _stageContextInfo.StageDisplayName;
-                bool wasFullCombo = _stageInputRecord.TotalMisses == 0 && _stageInputRecord.TotalErrants == 0;
-                bool isPlayingCustomTrack = !string.IsNullOrWhiteSpace(____customTrackAudioFilePath);
+                    // Get private fields
+                    try {
+                        GetPrivateFields(__instance);
+                    }
+                    catch (System.Exception ex) {
+                        RiftAP._log.LogError($"Error getting private fields in RRStageEnd PostFix: {ex}");
+                        return;
+                    }
 
-                try {
-                    if (VerifyCompletionRequirements(stageDisplayName, levelId, _stageScenePayload.GetLevelDifficulty(), SlotData.MapObjectToGrade(letter), wasFullCombo, _wereCheatsUsed)) {
-                        RiftAP._log.LogInfo("Archipelago location verification validated");
-                        if(isPlayingCustomTrack) {
-                            string songName = $"{stageDisplayName} [{levelId}]";
-                            AP_RRLocationSend(songName.Replace("\'", ""), levelId, _stageScenePayload.GetLevelDifficulty(), _isRemixMode);
+                    // Double check to ensure no null values
+                    if (_letterGradeDefinitions == null || _stageInputRecord == null || _stageScenePayload == null) {
+                        RiftAP._log.LogWarning("RRStageEnd PostFix: One or more private fields are null");
+                        return;
+                    }
+
+                    // Copy letter grade calculation from the original files
+                    float percentage = (float)_stageInputRecord.TotalScore / _stageInputRecord.BaseStageScore * 100f;
+                    string letter = _letterGradeDefinitions.GetLetterGradeForPercentage(percentage);
+                    if (_isMicroRift && letter != LetterGradeDefinitions.LetterGrades.SS.ToString()) {
+                        List<float> thresholds = _letterGradeDefinitions.GetLetterGradePercentageThresholdsInOrder();
+                        if (thresholds != null && thresholds.Count > 0) {
+                            float num = thresholds[thresholds.Count - 1];
+                            int extraScore = (int)((float)_stageInputRecord.BaseStageScore * num) + 1 - _stageInputRecord.TotalScore;
+                            _stageInputRecord.AddMicroRiftCompletionBonus(extraScore);
+                            letter = LetterGradeDefinitions.LetterGrades.SS.ToString();
                         }
-                        AP_RRLocationSend(stageDisplayName, levelId, _stageScenePayload.GetLevelDifficulty(), _isRemixMode);
                     }
-                    else {
-                        RiftAP._log.LogInfo("Archipelago location verification failed. Not sending check.");
+
+                    string levelId = _stageScenePayload.GetLevelId();
+                    string stageDisplayName = _stageContextInfo.StageDisplayName;
+                    bool wasFullCombo = _stageInputRecord.TotalMisses == 0 && _stageInputRecord.TotalErrants == 0;
+                    bool isPlayingCustomTrack = !string.IsNullOrWhiteSpace(____customTrackAudioFilePath);
+
+                    try {
+                        if (VerifyCompletionRequirements(stageDisplayName, levelId, _stageScenePayload.GetLevelDifficulty(), SlotData.MapObjectToGrade(letter), wasFullCombo, _wereCheatsUsed)) {
+                            RiftAP._log.LogInfo("Archipelago location verification validated");
+                            if(isPlayingCustomTrack) {
+                                string songName = $"{stageDisplayName} [{levelId}]";
+                                AP_RRLocationSend(songName.Replace("\'", ""), levelId, _stageScenePayload.GetLevelDifficulty(), _isRemixMode);
+                            }
+                            AP_RRLocationSend(stageDisplayName, levelId, _stageScenePayload.GetLevelDifficulty(), _isRemixMode);
+                        }
+                        else {
+                            RiftAP._log.LogInfo("Archipelago location verification failed. Not sending check.");
+                        }
+                    }
+                    catch (System.Exception ex) {
+                        RiftAP._log.LogError($"Error in APLocationSend: {ex}");
                     }
                 }
                 catch (System.Exception ex) {
-                    RiftAP._log.LogError($"Error in APLocationSend: {ex}");
+                    RiftAP._log.LogError($"Error in RRStageEnd PostFix: {ex}");
                 }
-            }
-            catch (System.Exception ex) {
-                RiftAP._log.LogError($"Error in RRStageEnd PostFix: {ex}");
-            }
         }
 
         public static bool VerifyCompletionRequirements(string stageDisplayName, string levelId, Difficulty difficulty,
