@@ -47,7 +47,7 @@ namespace RiftArchipelago{
             {"Resurrections", "DLCBanana05"},
         };
 
-        private static Dictionary<string, string> extraMapping = new Dictionary<string, string>() {
+        public static Dictionary<string, string> extraMapping = new Dictionary<string, string>() {
             {"A Bit of a Stretch", "MGYoga"},
             {"Lunch Rush", "MGBurger"},
             {"Voguelike", "MGPhoto"},

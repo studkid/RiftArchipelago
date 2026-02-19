@@ -6,9 +6,13 @@ using System.Threading.Tasks;
 using Shared.RhythmEngine;
 using Shared.Leaderboard;
 using RhythmRift;
+using System.Collections;
 using System.Collections.Generic;
 using Shared.SceneLoading.Payloads;
 using System.Reflection;
+using Minigames;
+using BossBattles;
+using System.Linq;
 
 namespace RiftArchipelago.Patches {
     [HarmonyPatch(typeof(RRStageController), "CompleteStageAfterAllEnemiesHaveDiedRoutine")]
@@ -248,60 +252,76 @@ namespace RiftArchipelago.Patches {
             catch { _isDailyChallenge = false; }
         }
     }
-    [HarmonyPatch(typeof(StageFlowUiController), "ShowResults")]
-    public static class APLocationSend
+
+    // Minigame Handling
+    [HarmonyPatch(typeof(MinigameBaseStageController<MinigameBeatmapPlayer>), "MinigameCompleteStageRoutine")]
+    public static class APMGLocationSend
     {
         [HarmonyPostfix]
-        public static void PostFix(StageFlowUiController __instance, ref StageFlowUiController.StageContextInfo ____stageContextInfo, StageInputRecord stageInputRecord,
-                                   float trackProgressPercentage, bool didNotFinish, bool cheatsDetected, bool isRemixMode, string bossName) {
+        public static void PostFix(ref IEnumerator __result, StageScenePayload ____stageScenePayload) {
             if (!ArchipelagoClient.isAuthenticated) return;
-            if (____stageContextInfo.IsDailyChallenge && ____stageContextInfo.IsChallenge) return;
 
-            if (trackProgressPercentage <= 0 && !____stageContextInfo.LetterGradeDefinitions.IsBossBattle) return;
+            var original = __result;
+            __result = Wrapper();
 
+            IEnumerator Wrapper() {
+                yield return original;
+
+                string levelName = ItemHandler.extraMapping.FirstOrDefault(x => x.Value == ____stageScenePayload.GetLevelId()).Key;
+                Difficulty difficulty = ____stageScenePayload.GetLevelDifficulty();
+
+                RiftAP._log.LogInfo("Minigame Cleared");
+                APExtraLocSend.sendExtra(levelName, difficulty, ArchipelagoClient.slotData.mgMode);
+        }
+    }
+
+    // Boss Battle Handling
+    [HarmonyPatch(typeof(BossBattleStageController), "CompleteStageRoutine")]
+    public static class APBBLocationSend
+    {
+        [HarmonyPostfix]
+        public static void PostFix(ref IEnumerator __result, StageScenePayload ____stageScenePayload, string ____resultsBossName) {
+            if (!ArchipelagoClient.isAuthenticated) return;
+
+            var original = __result;
+            __result = Wrapper();
+
+            IEnumerator Wrapper() {
+                yield return original;
+
+                Difficulty difficulty = ____stageScenePayload.GetLevelDifficulty();
+
+                RiftAP._log.LogInfo("Boss Battle Cleared");
+                APExtraLocSend.sendExtra(____resultsBossName, difficulty, ArchipelagoClient.slotData.bbMode);
+            }
+        }
+    }
+
+    public static class APExtraLocSend {
+        public static void sendExtra(string levelName, Difficulty difficulty, int mode) {
             long locId = -1;
 
-            if (____stageContextInfo.LetterGradeDefinitions.IsBossBattle) { // Boss Battle Handling
-                RiftAP._log.LogInfo("Boss Battle Cleared");
-                if (ArchipelagoClient.slotData.bbMode == 1) {
-                    if (____stageContextInfo.StageDisplayName == ArchipelagoClient.slotData.goalSong) {
+            if (mode == 1) {
+                    if (levelName == ArchipelagoClient.slotData.goalSong) {
                         ArchipelagoClient.GoalGame();
                     }
 
-                    locId = ArchipelagoClient.session.Locations.GetLocationIdFromName("Rift of the Necrodancer", ____stageContextInfo.StageDisplayName + "-0");
-                } else if (ArchipelagoClient.slotData.bbMode == 2) {
-                    if ($"{____stageContextInfo.StageDisplayName} ({____stageContextInfo.StageDifficulty})" == ArchipelagoClient.slotData.goalSong) {
-                        ArchipelagoClient.GoalGame();
-                    }
-
-                    locId = ArchipelagoClient.session.Locations.GetLocationIdFromName("Rift of the Necrodancer", $"{____stageContextInfo.StageDisplayName} ({____stageContextInfo.StageDifficulty})-0");
+                    locId = ArchipelagoClient.session.Locations.GetLocationIdFromName("Rift of the Necrodancer", levelName + "-0");
                 }
-            }
-
-            else if (____stageContextInfo.LetterGradeDefinitions.name == "LetterGradeDefinitionsMG") { // Minigame Handling
-                RiftAP._log.LogInfo("Minigame Cleared");
-                if (ArchipelagoClient.slotData.mgMode == 1) {
-                    if (____stageContextInfo.StageDisplayName == ArchipelagoClient.slotData.goalSong) {
+                else if (mode == 2) {
+                    if ($"{levelName} ({difficulty})" == ArchipelagoClient.slotData.goalSong) {
                         ArchipelagoClient.GoalGame();
                     }
 
-                    locId = ArchipelagoClient.session.Locations.GetLocationIdFromName("Rift of the Necrodancer", ____stageContextInfo.StageDisplayName + "-0");
+                    locId = ArchipelagoClient.session.Locations.GetLocationIdFromName("Rift of the Necrodancer", $"{levelName} ({difficulty})-0");
                 }
-                else if (ArchipelagoClient.slotData.mgMode == 2) {
-                    if ($"{____stageContextInfo.StageDisplayName} ({____stageContextInfo.StageDifficulty})" == ArchipelagoClient.slotData.goalSong) {
-                        ArchipelagoClient.GoalGame();
-                    }
 
-                    locId = ArchipelagoClient.session.Locations.GetLocationIdFromName("Rift of the Necrodancer", $"{____stageContextInfo.StageDisplayName} ({____stageContextInfo.StageDifficulty})-0");
+
+                RiftAP._log.LogInfo($"Sending {levelName} {locId}");
+
+                if (locId != -1) {
+                    ArchipelagoClient.session.Locations.CompleteLocationChecksAsync([locId, locId + 1]);
                 }
-            }
-
-            else { return; }
-
-            RiftAP._log.LogInfo($"Sending {____stageContextInfo.StageDisplayName} {locId}");
-
-            if (locId != -1) {
-                ArchipelagoClient.session.Locations.CompleteLocationChecksAsync([locId, locId + 1]);
             }
         }
     }

@@ -61,7 +61,7 @@ namespace RiftArchipelago.Patches{
 
             for(int i = 0; i < __result.Length; i++) {
                 MGTrackMetaData song = __result[i];
-                RiftAP._log.LogInfo($"MG GetTrackMetaDatas: {song.LevelId}");
+                // RiftAP._log.LogInfo($"MG GetTrackMetaDatas: {song.LevelId}");
 
                 if(song.TrackDifficulty == Difficulty.Medium && !ItemHandler.extraMedium.Contains(song.LevelId)) {
                     __result[i].UnlockCriteria.Type = UnlockCriteriaType.AlwaysLocked;
@@ -82,7 +82,7 @@ namespace RiftArchipelago.Patches{
 
             for(int i = 0; i < __result.Length; i++) {
                 BBTrackMetaData song = __result[i];
-                RiftAP._log.LogInfo($"BB GetTrackMetaDatas: {song.LevelId}");
+                // RiftAP._log.LogInfo($"BB GetTrackMetaDatas: {song.LevelId}");
 
                 if(song.TrackDifficulty == Difficulty.Medium && !ItemHandler.extraMedium.Contains(song.LevelId)) {
                     __result[i].UnlockCriteria.Type = UnlockCriteriaType.AlwaysLocked;
