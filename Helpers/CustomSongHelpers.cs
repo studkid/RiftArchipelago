@@ -20,6 +20,7 @@ namespace RiftArchipelago.Helpers {
                     string songName = $"{song.TrackName} [{song.LevelId}]";
                     workshopSongDatas.Add(songName.Replace("\'", ""), new customSongData {                      
                         code = song.LevelId.Substring(2),
+                        song_id = song.LevelId,
                         DLC = "Workshop",
                         diff_easy = song.GetDifficulty(Difficulty.Easy)?.Intensity,
                         diff_medium = song.GetDifficulty(Difficulty.Medium)?.Intensity,
@@ -31,6 +32,7 @@ namespace RiftArchipelago.Helpers {
                     string songName = $"{song.TrackName} [{song.LevelId}]";
                     workshopSongDatas.Add(songName.Replace("\'", ""), new customSongData {
                         code = Convert.ToString(1 + localSongs),
+                        song_id = song.LevelId,
                         DLC = "Local",
                         diff_easy = song.GetDifficulty(Difficulty.Easy)?.Intensity,
                         diff_medium = song.GetDifficulty(Difficulty.Medium)?.Intensity,
@@ -52,6 +54,7 @@ namespace RiftArchipelago.Helpers {
 
     public class customSongData {
         public string code;
+        public string song_id;
         public string DLC;
         public float? diff_easy;
         public float? diff_medium;
