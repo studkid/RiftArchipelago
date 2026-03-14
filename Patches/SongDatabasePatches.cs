@@ -5,6 +5,7 @@ using Shared.TrackData;
 using Shared.PlayerData;
 using Shared;
 using RiftArchipelago.Helpers;
+using System.IO;
 
 namespace RiftArchipelago.Patches{
     [HarmonyPatch(typeof(SongDatabase), "InitializeDictionary")]
