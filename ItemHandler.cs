@@ -125,7 +125,6 @@ namespace RiftArchipelago{
             if(diamondCount >= ArchipelagoClient.slotData.diamondGoal) {
                 string goalSong = ArchipelagoClient.slotData.goalSong;
                 string goalType = ArchipelagoClient.slotData.goalType;
-                RiftAP._log.LogInfo(goalType);
 
                 if(goalType == "Minigame" || goalType == "Boss") {
                     UnlockExtra(goalSong);

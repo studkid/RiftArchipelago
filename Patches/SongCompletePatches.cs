@@ -268,8 +268,7 @@ namespace RiftArchipelago.Patches {
 
     // Minigame Handling
     [HarmonyPatch(typeof(MinigameBaseStageController<MinigameBeatmapPlayer>), "MinigameCompleteStageRoutine")]
-    public static class APMGLocationSend
-    {
+    public static class APMGLocationSend {
         [HarmonyPostfix]
         public static void PostFix(ref IEnumerator __result, StageScenePayload ____stageScenePayload) {
             if (!ArchipelagoClient.isAuthenticated) return;
@@ -285,15 +284,15 @@ namespace RiftArchipelago.Patches {
 
                 RiftAP._log.LogInfo("Minigame Cleared");
                 APExtraLocSend.sendExtra(levelName, difficulty, ArchipelagoClient.slotData.mgMode);
+            }
         }
     }
 
     // Boss Battle Handling
     [HarmonyPatch(typeof(BossBattleStageController), "CompleteStageRoutine")]
-    public static class APBBLocationSend
-    {
+    public static class APBBLocationSend {
         [HarmonyPostfix]
-        public static void PostFix(ref IEnumerator __result, StageScenePayload ____stageScenePayload, string ____resultsBossName) {
+        public static void PostFix(ref IEnumerator __result, StageScenePayload ____stageScenePayload, string ____levelId) {
             if (!ArchipelagoClient.isAuthenticated) return;
 
             var original = __result;
@@ -302,10 +301,11 @@ namespace RiftArchipelago.Patches {
             IEnumerator Wrapper() {
                 yield return original;
 
+                string levelName = ItemHandler.extraMapping.FirstOrDefault(x => x.Value == ____levelId).Key;
                 Difficulty difficulty = ____stageScenePayload.GetLevelDifficulty();
 
                 RiftAP._log.LogInfo("Boss Battle Cleared");
-                APExtraLocSend.sendExtra(____resultsBossName, difficulty, ArchipelagoClient.slotData.bbMode);
+                APExtraLocSend.sendExtra(levelName, difficulty, ArchipelagoClient.slotData.bbMode);
             }
         }
     }
@@ -315,33 +315,30 @@ namespace RiftArchipelago.Patches {
             long locId = -1;
 
             if (mode == 1) {
-                    if (levelName == ArchipelagoClient.slotData.goalSong) {
-                        ArchipelagoClient.GoalGame();
-                    }
-
-                    locId = ArchipelagoClient.session.Locations.GetLocationIdFromName("Rift of the Necrodancer", levelName + "-0");
-                }
-                else if (mode == 2) {
-                    if ($"{levelName} ({difficulty})" == ArchipelagoClient.slotData.goalSong) {
-                        ArchipelagoClient.GoalGame();
-                    }
-
-                    locId = ArchipelagoClient.session.Locations.GetLocationIdFromName("Rift of the Necrodancer", $"{levelName} ({difficulty})-0");
+                if (levelName == ArchipelagoClient.slotData.goalSong) {
+                    ArchipelagoClient.GoalGame();
                 }
 
-
-                RiftAP._log.LogInfo($"Sending {levelName} {locId}");
-
-                if (locId != -1) {
-                    ArchipelagoClient.session.Locations.CompleteLocationChecksAsync([locId, locId + 1]);
+                locId = ArchipelagoClient.session.Locations.GetLocationIdFromName("Rift of the Necrodancer", levelName + "-0");
+            }
+            else if (mode == 2) {
+                if ($"{levelName} ({difficulty})" == ArchipelagoClient.slotData.goalSong) {
+                    ArchipelagoClient.GoalGame();
                 }
+
+                locId = ArchipelagoClient.session.Locations.GetLocationIdFromName("Rift of the Necrodancer", $"{levelName} ({difficulty})-0");
+            }
+
+            RiftAP._log.LogInfo($"Sending {levelName} {locId}");
+
+            if (locId != -1) {
+                ArchipelagoClient.session.Locations.CompleteLocationChecksAsync([locId, locId + 1]);
             }
         }
     }
 
     [HarmonyPatch(typeof(LeaderboardDataAccessor), "UploadScoreToLeaderboard")]
-    public static class LeaderboardUploadOverride
-    {
+    public static class LeaderboardUploadOverride {
         // Prevent uploading scores to the leaderboard if connected to Archipelago
         private static bool Prefix(out Task<bool> __result) {
             RiftAP._log.LogInfo($"Uploading Score: {!ArchipelagoClient.isAuthenticated}");
