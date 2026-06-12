@@ -62,6 +62,8 @@ namespace RiftArchipelago{
         };
 
         public static Dictionary<string, SongDatabaseData> songDatabaseDict;
+        public static List<string> baseSongUnlocked = [];
+        public static List<string> baseRemixUnlocked = [];
         public static List<string> dlcSongUnlocked = [];
         public static List<string> dlcRemixUnlocked = [];
         public static List<string> customUnlocked = [];
@@ -98,6 +100,14 @@ namespace RiftArchipelago{
                         diff.UnlockCriteria.Type = UnlockCriteriaType.AlwaysLocked;
                         diff.RemixUnlockCriteria.Type = UnlockCriteriaType.AlwaysLocked;
                     }
+                }
+
+                foreach(string song in baseSongUnlocked) {
+                    UnlockSong(song);
+                }
+
+                foreach(string song in baseRemixUnlocked) {
+                    UnlockRemix(song);
                 }
             }
         }
@@ -148,6 +158,7 @@ namespace RiftArchipelago{
             if(songMapping.TryGetValue(songName, out var levelName)) {
                 if(songDatabaseDict.TryGetValue(levelName, out var value)) {
                     RiftAP._log.LogInfo($"UnlockSong: Unlocking \"{songName}\"");
+                    baseSongUnlocked.Add(songName);
             
                     foreach(DifficultyInformation diff in value.DifficultyInformation) {
                         diff.UnlockCriteria.Type = UnlockCriteriaType.None;
@@ -168,6 +179,7 @@ namespace RiftArchipelago{
             if(songMapping.TryGetValue(songName, out var levelName)) {
                 if(songDatabaseDict.TryGetValue(levelName, out var value)) {
                     RiftAP._log.LogInfo($"UnlockRemix: Unlocking \"{songName} (Remix)\"");
+                    baseRemixUnlocked.Add(songName);
             
                     foreach(DifficultyInformation diff in value.DifficultyInformation) {
                         diff.RemixUnlockCriteria.Type = UnlockCriteriaType.None;
