@@ -87,6 +87,7 @@ public static class ArchipelagoClient {
         ItemHandler.ResetEverything();
         isAuthenticated = false;
         slotData = null;
+        session = null;
     }
     
     public static void GoalGame() {

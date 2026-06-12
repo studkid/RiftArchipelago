@@ -19,11 +19,11 @@ namespace RiftArchipelago.Patches{
     [HarmonyPatch(typeof(TrackSelectionSceneController), "GetTrackMetadataFromDatabase")]
     public static class GetDLCTracks {
         [HarmonyPrefix]
-        public static void Prefix(ref Dictionary<string, ITrackMetadata> ____dynamicMetadataMap) {
+        public static void Prefix(ref List<ITrackMetadata> ____dynamicMetadataList) {
             // DLC Data Dump (Probably add some button/var that can toggle this instead of manually commenting this between releases lol)
             // string path = Directory.GetCurrentDirectory();
             // int i = 90;
-            // foreach(ITrackMetadata song in ____dynamicMetadataMap.Values) {
+            // foreach(ITrackMetadata song in ____dynamicMetadataList) {
             //     using(StreamWriter output = new StreamWriter(Path.Combine(path, "dlcdata.txt"), true)) {
             //         output.WriteLine($"{{\"{song.TrackName}\", \"{song.LevelId}\"}},");
             //     }
@@ -36,11 +36,12 @@ namespace RiftArchipelago.Patches{
 
             if (!ArchipelagoClient.isAuthenticated || ArchipelagoClient.freePlay) return;
 
-            foreach(LocalTrackMetadata song in ____dynamicMetadataMap.Values) {
+            foreach(LocalTrackMetadata song in ____dynamicMetadataList) {
                 foreach(LocalTrackDifficulty diff in song.DifficultyInformation) {
-                    diff.UnlockCriteria = new TrackUnlockCriteria();
-                    diff.UnlockCriteria.Main = new UnlockCriteria();
-                    if(!ItemHandler.dlcSongUnlocked.Contains(song.TrackName)) {
+                    diff.UnlockCriteria = new TrackUnlockCriteria {
+                        Main = new UnlockCriteria()
+                    };
+                    if (!ItemHandler.dlcSongUnlocked.Contains(song.TrackName)) {
                         diff.UnlockCriteria.Main.Type = UnlockCriteriaType.AlwaysLocked;
                     }
 
