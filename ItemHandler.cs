@@ -128,6 +128,14 @@ namespace RiftArchipelago{
             }
         }
 
+        public static bool IsUnlocked(string songName) {
+            if(baseSongUnlocked.Contains(songName)) return true;
+            if(baseRemixUnlocked.Contains(songName)) return true;
+            if(dlcSongUnlocked.Contains(songName)) return true;
+            if(dlcRemixUnlocked.Contains(songName)) return true;
+            return false;
+        }
+
         public static void AddDiamond() {
             diamondCount += 1;
             RiftAP._log.LogInfo($"AddDiamond: Adding Diamond | New Total: {diamondCount}");

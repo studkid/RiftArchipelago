@@ -36,6 +36,7 @@ public static class ArchipelagoClient {
     public static int deathLinkCooldown = 0;
     public static RRStageController rrStageController;
     public static bool freePlay = false;
+    public static List<string> unplayedSongs = [];
 
     public enum DeathLinkState {
         Off = 0,
@@ -75,6 +76,11 @@ public static class ArchipelagoClient {
             slotData = new SlotData(loginSuccess.SlotData);
 
             session.Items.ItemReceived += Session_ItemReceived;
+
+            foreach(long location in session.Locations.AllMissingLocations) {
+                string locName = session.Locations.GetLocationNameFromId(location);
+                unplayedSongs.Add(locName.Substring(0, locName.Length - 2));
+            }
             
             return true;
         }

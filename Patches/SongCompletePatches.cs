@@ -176,6 +176,7 @@ namespace RiftArchipelago.Patches {
             RiftAP._log.LogInfo($"Sending {stageDisplayName} {locId}");
 
             if (locId != -1) {
+                ArchipelagoClient.unplayedSongs.Remove(stageDisplayName);
                 ArchipelagoClient.session.Locations.CompleteLocationChecksAsync([locId, locId + 1]);
             }
         }
