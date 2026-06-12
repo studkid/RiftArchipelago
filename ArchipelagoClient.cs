@@ -79,6 +79,7 @@ public static class ArchipelagoClient {
 
             foreach(long location in session.Locations.AllMissingLocations) {
                 string locName = session.Locations.GetLocationNameFromId(location);
+                unplayedSongs.Add(slotData.goalSong);
                 unplayedSongs.Add(locName.Substring(0, locName.Length - 2));
             }
             
@@ -98,8 +99,9 @@ public static class ArchipelagoClient {
     
     public static void GoalGame() {
         RiftAP._log.LogInfo("Goal Reached!");
-        var statusUpdatePacket = new StatusUpdatePacket();
-        statusUpdatePacket.Status = ArchipelagoClientState.ClientGoal;
+        var statusUpdatePacket = new StatusUpdatePacket {
+            Status = ArchipelagoClientState.ClientGoal
+        };
         session.Socket.SendPacket(statusUpdatePacket);
     }
 
