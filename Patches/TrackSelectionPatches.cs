@@ -21,7 +21,7 @@ namespace RiftArchipelago.Patches{
             if(!ArchipelagoClient.isAuthenticated) return;
             
             if(filterOption == TrackFilterOption.UnplayedSongs) {
-                RiftAP._log.LogInfo("Sorting!");
+                RiftAP.LogMsg(RiftAP.LogLevel.INFO, "Sorting!");
                 __result = metadataToFilter.Where(delegate (ITrackMetadata d) {
                     if(d.Category != TrackCategory.Tutorial) {
                         return ArchipelagoClient.unplayedSongs.Contains(d.TrackName) && ItemHandler.IsUnlocked(d.TrackName);

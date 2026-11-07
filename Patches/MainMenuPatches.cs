@@ -38,7 +38,7 @@ namespace RiftArchipelago.Patches{
             }
             if (_inputController == null)
             {
-                RiftAP._log.LogWarning("RRStageEnd PostFix: _inputController == null");
+                RiftAP.LogMsg(RiftAP.LogLevel.WARN, "RRStageEnd PostFix: _inputController == null");
                 return;
             }
 

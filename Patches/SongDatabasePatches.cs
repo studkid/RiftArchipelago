@@ -46,7 +46,7 @@ namespace RiftArchipelago.Patches{
                     }
 
                     diff.UnlockCriteria.Remix = new UnlockCriteria();
-                    // RiftAP._log.LogInfo($"{song.TrackName}: {!ItemHandler.dlcSongUnlocked.Contains(song.TrackName)}, {!ArchipelagoClient.slotData.remix}, {!ItemHandler.dlcRemixUnlocked.Contains(song.TrackName)}");
+                    // RiftAP.LogMsg(RiftAP.LogLevel.INFO, $"{song.TrackName}: {!ItemHandler.dlcSongUnlocked.Contains(song.TrackName)}, {!ArchipelagoClient.slotData.remix}, {!ItemHandler.dlcRemixUnlocked.Contains(song.TrackName)}");
                     if((!ItemHandler.dlcSongUnlocked.Contains(song.TrackName) && !ArchipelagoClient.slotData.remix) || !ItemHandler.dlcRemixUnlocked.Contains(song.TrackName)) {
                         diff.UnlockCriteria.Remix.Type = UnlockCriteriaType.AlwaysLocked;
                     }
@@ -63,7 +63,7 @@ namespace RiftArchipelago.Patches{
 
             for(int i = 0; i < __result.Length; i++) {
                 MGTrackMetaData song = __result[i];
-                // RiftAP._log.LogInfo($"MG GetTrackMetaDatas: {song.LevelId}");
+                // RiftAP.LogMsg(RiftAP.LogLevel.INFO, $"MG GetTrackMetaDatas: {song.LevelId}");
 
                 if(song.TrackDifficulty == Difficulty.Medium && !ItemHandler.extraMedium.Contains(song.LevelId)) {
                     __result[i].UnlockCriteria.Type = UnlockCriteriaType.AlwaysLocked;
@@ -84,7 +84,7 @@ namespace RiftArchipelago.Patches{
 
             for(int i = 0; i < __result.Length; i++) {
                 BBTrackMetaData song = __result[i];
-                // RiftAP._log.LogInfo($"BB GetTrackMetaDatas: {song.LevelId}");
+                // RiftAP.LogMsg(RiftAP.LogLevel.INFO, $"BB GetTrackMetaDatas: {song.LevelId}");
 
                 if(song.TrackDifficulty == Difficulty.Medium && !ItemHandler.extraMedium.Contains(song.LevelId)) {
                     __result[i].UnlockCriteria.Type = UnlockCriteriaType.AlwaysLocked;
@@ -109,9 +109,9 @@ namespace RiftArchipelago.Patches{
             foreach(LocalTrackMetadata song in refTrackList) {
                 string songName = $"{song.TrackName} [{song.LevelId}]"; 
 
-                RiftAP._log.LogInfo($"{song.TrackName} in List: {!ItemHandler.customUnlocked.Contains(songName.Replace("\'", ""))}");
+                RiftAP.LogMsg(RiftAP.LogLevel.INFO, $"{song.TrackName} in List: {!ItemHandler.customUnlocked.Contains(songName.Replace("\'", ""))}");
                 if(!ItemHandler.customUnlocked.Contains(songName.Replace("\'", ""))) {
-                    RiftAP._log.LogInfo($"Removing {song.TrackName}");
+                    RiftAP.LogMsg(RiftAP.LogLevel.INFO, $"Removing {song.TrackName}");
                     ____customTrackMetadatas.Remove(song);
                 }
             }

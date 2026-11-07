@@ -98,7 +98,7 @@ public static class ArchipelagoClient {
     }
     
     public static void GoalGame() {
-        RiftAP._log.LogInfo("Goal Reached!");
+        RiftAP.LogMsg(RiftAP.LogLevel.INFO, "Goal Reached!");
         var statusUpdatePacket = new StatusUpdatePacket {
             Status = ArchipelagoClientState.ClientGoal
         };
@@ -107,7 +107,7 @@ public static class ArchipelagoClient {
 
     private static void Session_ItemReceived(ReceivedItemsHelper helper) {
         var item = helper.DequeueItem();
-        RiftAP._log.LogInfo($"Item Recieved: {item.ItemDisplayName} | ID: {item.ItemId}");
+        RiftAP.LogMsg(RiftAP.LogLevel.INFO, $"Item Recieved: {item.ItemDisplayName} | ID: {item.ItemId}");
 
         if(item.ItemId == 1) { // Diamonds
             ItemHandler.AddDiamond();
@@ -147,7 +147,7 @@ public static class ArchipelagoClient {
     // }
 
     // private static void OndeathLinkRecieved(DeathLink deathLink) {
-    //     RiftAP._log.LogInfo($"Deathlink Recieved: {deathLink.Source} {deathLink.Cause}");
+    //     RiftAP.LogMsg(RiftAP.LogLevel.INFO, $"Deathlink Recieved: {deathLink.Source} {deathLink.Cause}");
 
     //     // if(rrStageController == null || rrStageController._isPlayerBeenDefeated)
     // }

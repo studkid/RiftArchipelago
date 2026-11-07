@@ -20,7 +20,7 @@ namespace RiftArchipelago {
                     diamondGoal = ParseInt(diamond_goal);
                 }
                 catch {
-                    RiftAP._log.LogError("Failed to get diamondGoal from Slot Data.  Something went very wrong");
+                    RiftAP.LogMsg(RiftAP.LogLevel.ERR, "Failed to get diamondGoal from Slot Data.  Something went very wrong");
                     diamondGoal = -1;
                 }
             }
@@ -29,7 +29,7 @@ namespace RiftArchipelago {
                     goalSong = (string) victory;
                 }
                 catch {
-                    RiftAP._log.LogError("Failed to get victoryLocation from Slot Data.  Something went very wrong");
+                    RiftAP.LogMsg(RiftAP.LogLevel.ERR, "Failed to get victoryLocation from Slot Data.  Something went very wrong");
                     goalSong = "Goal Song Invalid";
                 }
             }
@@ -38,7 +38,7 @@ namespace RiftArchipelago {
                     goalType = (string) victory_type;
                 }
                 catch {
-                    RiftAP._log.LogError("Failed to get victoryType from Slot Data.  Something went very wrong");
+                    RiftAP.LogMsg(RiftAP.LogLevel.ERR, "Failed to get victoryType from Slot Data.  Something went very wrong");
                     goalType = "Rift";
                 }
             }
@@ -47,7 +47,7 @@ namespace RiftArchipelago {
                 remix = Convert.ToBoolean(remixes);
                 }
                 catch {
-                    RiftAP._log.LogError("Failed to get remixes from Slot Data.  Something went very wrong");
+                    RiftAP.LogMsg(RiftAP.LogLevel.ERR, "Failed to get remixes from Slot Data.  Something went very wrong");
                     remix = false;
                 }
             }
@@ -56,7 +56,7 @@ namespace RiftArchipelago {
                     mgMode = ParseInt(mg_mode);
                 }
                 catch {
-                    RiftAP._log.LogError("Failed to get minigameMode from Slot Data.  Something went very wrong");
+                    RiftAP.LogMsg(RiftAP.LogLevel.ERR, "Failed to get minigameMode from Slot Data.  Something went very wrong");
                     mgMode = 0;
                 }
             }
@@ -65,7 +65,7 @@ namespace RiftArchipelago {
                     bbMode = ParseInt(boss_mode);
                 }
                 catch {
-                    RiftAP._log.LogError("Failed to get bossMode from Slot Data.  Something went very wrong");
+                    RiftAP.LogMsg(RiftAP.LogLevel.ERR, "Failed to get bossMode from Slot Data.  Something went very wrong");
                     bbMode = 0;
                 }
             }
@@ -74,7 +74,7 @@ namespace RiftArchipelago {
                     gradeNeeded = MapObjectToGrade(grade_needed);
                 }
                 catch {
-                    RiftAP._log.LogError("Failed to get gradeNeeded from Slot Data.  Something went very wrong");
+                    RiftAP.LogMsg(RiftAP.LogLevel.ERR, "Failed to get gradeNeeded from Slot Data.  Something went very wrong");
                     gradeNeeded = Grade.Any;
                 }
             }
@@ -83,7 +83,7 @@ namespace RiftArchipelago {
                     fullComboNeeded = Convert.ToBoolean(fc_needed);
                 }
                 catch {
-                    RiftAP._log.LogError("Failed to get fullComboNeeded from Slot Data.  Something went very wrong");
+                    RiftAP.LogMsg(RiftAP.LogLevel.ERR, "Failed to get fullComboNeeded from Slot Data.  Something went very wrong");
                     fullComboNeeded = false;
                 }
             }

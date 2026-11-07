@@ -75,7 +75,7 @@ namespace RiftArchipelago{
 
         public static void Setup() {
             diamondCount = 0;
-            RiftAP._log.LogInfo($"IH Setup: Setting up song Dict");
+            RiftAP.LogMsg(RiftAP.LogLevel.INFO, $"IH Setup: Setting up song Dict");
 
             foreach(SongDatabaseData song in songDatabaseDict.Values) {
                 foreach(DifficultyInformation diff in song.DifficultyInformation) {
@@ -138,7 +138,7 @@ namespace RiftArchipelago{
 
         public static void AddDiamond() {
             diamondCount += 1;
-            RiftAP._log.LogInfo($"AddDiamond: Adding Diamond | New Total: {diamondCount}");
+            RiftAP.LogMsg(RiftAP.LogLevel.INFO, $"AddDiamond: Adding Diamond | New Total: {diamondCount}");
 
             if(diamondCount >= ArchipelagoClient.slotData.diamondGoal) {
                 string goalSong = ArchipelagoClient.slotData.goalSong;
@@ -165,7 +165,7 @@ namespace RiftArchipelago{
         public static void UnlockSong(string songName) {
             if(songMapping.TryGetValue(songName, out var levelName)) {
                 if(songDatabaseDict.TryGetValue(levelName, out var value)) {
-                    RiftAP._log.LogInfo($"UnlockSong: Unlocking \"{songName}\"");
+                    RiftAP.LogMsg(RiftAP.LogLevel.INFO, $"UnlockSong: Unlocking \"{songName}\"");
                     baseSongUnlocked.Add(songName);
             
                     foreach(DifficultyInformation diff in value.DifficultyInformation) {
@@ -173,12 +173,13 @@ namespace RiftArchipelago{
                         if(!ArchipelagoClient.slotData.remix) {
                             diff.RemixUnlockCriteria.Type = UnlockCriteriaType.None;
                         }
+                        RiftAP.LogMsg(RiftAP.LogLevel.INFO, $"UnlockSong: Chaning Unlock State {diff.UnlockCriteria.Type}");
                     }
                 }
             }
             
             else {
-                RiftAP._log.LogInfo($"UnlockSong: Unlocking \"{songName}\" (Post Anniversary DLC Song)");
+                RiftAP.LogMsg(RiftAP.LogLevel.INFO, $"UnlockSong: Unlocking \"{songName}\" (Post Anniversary DLC Song)");
                 dlcSongUnlocked.Add(songName);
             }
         }
@@ -186,36 +187,37 @@ namespace RiftArchipelago{
         public static void UnlockRemix(string songName) {
             if(songMapping.TryGetValue(songName, out var levelName)) {
                 if(songDatabaseDict.TryGetValue(levelName, out var value)) {
-                    RiftAP._log.LogInfo($"UnlockRemix: Unlocking \"{songName} (Remix)\"");
+                    RiftAP.LogMsg(RiftAP.LogLevel.INFO, $"UnlockRemix: Unlocking \"{songName} (Remix)\"");
                     baseRemixUnlocked.Add(songName);
             
                     foreach(DifficultyInformation diff in value.DifficultyInformation) {
                         diff.RemixUnlockCriteria.Type = UnlockCriteriaType.None;
+                        RiftAP.LogMsg(RiftAP.LogLevel.INFO, $"UnlockRemix: Chaning Unlock State {diff.UnlockCriteria.Type}");
                     }
                 }
             }
             
             else {
-                RiftAP._log.LogInfo($"UnlockRemix: Unlocking \"{songName} (Remix)\" (Post Anniversary DLC Song)");
+                RiftAP.LogMsg(RiftAP.LogLevel.INFO, $"UnlockRemix: Unlocking \"{songName} (Remix)\" (Post Anniversary DLC Song)");
                 dlcRemixUnlocked.Add(songName);
             }
         }
 
         public static void UnlockExtra(string songName) {
             if(songName.Contains("(Medium)")) {
-                RiftAP._log.LogInfo($"UnlockExtra: Unlocking \"{songName}\"");
+                RiftAP.LogMsg(RiftAP.LogLevel.INFO, $"UnlockExtra: Unlocking \"{songName}\"");
                 extraMapping.TryGetValue(songName.Substring(0, songName.Length - 9), out var value);
                 extraMedium.Add(value);
             }
 
             else if(songName.Contains("(Hard)")) {
-                RiftAP._log.LogInfo($"UnlockExtra: Unlocking \"{songName}\"");
+                RiftAP.LogMsg(RiftAP.LogLevel.INFO, $"UnlockExtra: Unlocking \"{songName}\"");
                 extraMapping.TryGetValue(songName.Substring(0, songName.Length - 7), out var value);
                 extraHard.Add(value);
             }
 
             else {
-                RiftAP._log.LogInfo($"UnlockExtra: Unlocking \"{songName}\"");
+                RiftAP.LogMsg(RiftAP.LogLevel.INFO, $"UnlockExtra: Unlocking \"{songName}\"");
                 extraMapping.TryGetValue(songName, out var value);
                 extraMedium.Add(value);
                 extraHard.Add(value);
@@ -223,7 +225,7 @@ namespace RiftArchipelago{
         }
 
         public static void UnlockCustom(string songName) {
-            RiftAP._log.LogInfo($"UnlockCustom: Unlocking \"{songName}\"");
+            RiftAP.LogMsg(RiftAP.LogLevel.INFO, $"UnlockCustom: Unlocking \"{songName}\"");
             customUnlocked.Add(songName);
         }
     }
