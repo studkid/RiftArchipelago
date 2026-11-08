@@ -186,9 +186,9 @@ namespace RiftArchipelago.Patches {
         public static void GetPrivateFields(RRStageController __instance) {
             // BeatmapPlayer: try property first, then field
             object beatmapPlayer = null;
-            try { beatmapPlayer = Traverse.Create(__instance).Property("BeatmapPlayer").GetValue(); } catch { }
+            try { beatmapPlayer = Traverse.Create(__instance).Property("TimelineMapPlayer").GetValue(); } catch { }
             if (beatmapPlayer == null) {
-                try { beatmapPlayer = Traverse.Create(__instance).Field("BeatmapPlayer").GetValue(); } catch { }
+                try { beatmapPlayer = Traverse.Create(__instance).Field("TimelineMapPlayer").GetValue(); } catch { }
             }
             if (beatmapPlayer == null) {
                 Log.Warning("RRStageEnd PostFix: BeatmapPlayer == null");
