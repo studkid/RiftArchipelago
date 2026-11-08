@@ -12,9 +12,8 @@ namespace RiftArchipelago.Patches{
     public static class GetDLCTracks {
         [HarmonyPrefix]
         public static void Prefix(ref List<ITrackMetadata> ____dynamicMetadataList) {
-            // DLC Data Dump (Probably add some button/var that can toggle this instead of manually commenting this between releases lol)
+            // DLC Data Dump
             RiftAP.dynamicMetadataList = ____dynamicMetadataList;
-            Log.Info("AAAAAAAAAA" + RiftAP.dynamicMetadataList);
 
             if (!RiftAP.apClient.isAuthenticated || RiftAP.apClient.freePlay) return;
 
@@ -83,8 +82,7 @@ namespace RiftArchipelago.Patches{
     public static class GetCustomTracks {
         [HarmonyPrefix]
         public static void Prefix(ref List<ITrackMetadata> ____customTrackMetadatas) {
-            // TODO Make this not run every single time this method is called
-            CustomSongHelpers.saveCustomData(____customTrackMetadatas);
+            CustomSongHelpers.customSongs = ____customTrackMetadatas;
             if (!RiftAP.apClient.isAuthenticated || RiftAP.apClient.freePlay) return;
             List<ITrackMetadata> refTrackList = new List<ITrackMetadata>(____customTrackMetadatas);
 

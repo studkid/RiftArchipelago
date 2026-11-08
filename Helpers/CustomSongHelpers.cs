@@ -5,17 +5,25 @@ using Shared;
 using System.IO;
 using System;
 using Newtonsoft.Json;
+using RiftOfTheNecroManager;
+using Shared.PlayerData;
 
 namespace RiftArchipelago.Helpers {
-    public static class CustomSongHelpers {
+    public class CustomSongHelpers {
 
         internal static string savePath = Path.Combine(Directory.GetCurrentDirectory(), "Output");
+        public static List<ITrackMetadata> customSongs = new List<ITrackMetadata>();
 
-        public static void saveCustomData(List<ITrackMetadata> metadata) {
+        public static void saveCustomData() {
             Dictionary<string, customSongData> workshopSongDatas = new Dictionary<string, customSongData>();
             int localSongs = 0;
+            int workshopSongs = 0;
+            Log.Info("saveCustomdata: Scanning Custom Songs...");
+            Log.Info(customSongs.Count);
 
-            foreach(ITrackMetadata song in metadata) {
+            foreach(ITrackMetadata song in customSongs) {
+                if(!PlayerDataUtil.IsLevelFavorite(song.LevelId)) continue;
+
                 if(song.LevelId.Substring(0, 2) == "ws") {
                     string songName = $"{song.TrackName} [{song.LevelId}]";
                     workshopSongDatas.Add(songName.Replace("\'", ""), new customSongData {                      
@@ -26,7 +34,9 @@ namespace RiftArchipelago.Helpers {
                         diff_medium = song.GetDifficulty(Difficulty.Medium)?.Intensity,
                         diff_hard = song.GetDifficulty(Difficulty.Hard)?.Intensity,
                         diff_impossible = song.GetDifficulty(Difficulty.Impossible)?.Intensity,
+                        
                     });
+                    workshopSongs =+ 1;
                 }
                 else {
                     string songName = $"{song.TrackName} [{song.LevelId}]";
@@ -39,7 +49,7 @@ namespace RiftArchipelago.Helpers {
                         diff_hard = song.GetDifficulty(Difficulty.Hard)?.Intensity,
                         diff_impossible = song.GetDifficulty(Difficulty.Impossible)?.Intensity,
                     });
-                    localSongs =+ 2;
+                    localSongs =+ 1;
                 }
             }
 
@@ -47,6 +57,7 @@ namespace RiftArchipelago.Helpers {
                 Directory.CreateDirectory(savePath);
             }
 
+            Log.Info($"saveCustomData: Found {workshopSongs} workshop songs and {localSongs} local songs in favorites.  Dumping!");
             string workshopJson = JsonConvert.SerializeObject(workshopSongDatas, Formatting.None);
             File.WriteAllText(Path.Combine(savePath, "CustomSongs.json"), workshopJson);
         }   

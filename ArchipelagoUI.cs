@@ -1,3 +1,4 @@
+using RiftArchipelago.Helpers;
 using Shared.RhythmEngine;
 using UnityEngine;
 
@@ -72,7 +73,7 @@ namespace RiftArchipelago{
             bool showConnectedMenu = inMenu && hasSession;
 
             int panelHeight = 60; // base for status only
-            if (showLogin) panelHeight = 140;
+            if (showLogin) panelHeight = 160;
             else if (showConnectedMenu) panelHeight = 120;
 
             // Precompute column positions to avoid overflow
@@ -158,17 +159,26 @@ namespace RiftArchipelago{
                         RiftAP.DumpSongData();
                     }
                 }
+
+                if(RiftAP.state == APState.CustomMenu) {
+                    if(GUI.Button(new Rect(130, 110, 170, LineHeight), "Dump Favorited Songs")) {
+                        CustomSongHelpers.saveCustomData();
+                    }
+                }
+
+                GUI.Label(new Rect(labelX, 140, 250, LineHeight), "Press Left Alt to Reveal Cursor.");
             }
             else if(RiftAP.state == APState.Menu && RiftAP.apClient.session != null) {
 
                 if (toggleLabelGapStyle == null) {
-                    toggleLabelGapStyle = new GUIStyle(GUI.skin.toggle);
-                    toggleLabelGapStyle.padding = new RectOffset(
-                        GUI.skin.toggle.padding.left + 8, // extra gap
-                        GUI.skin.toggle.padding.right,
-                        GUI.skin.toggle.padding.top,
-                        GUI.skin.toggle.padding.bottom
-                    );
+                    toggleLabelGapStyle = new GUIStyle(GUI.skin.toggle) {
+                        padding = new RectOffset(
+                            GUI.skin.toggle.padding.left + 8, // extra gap
+                            GUI.skin.toggle.padding.right,
+                            GUI.skin.toggle.padding.top,
+                            GUI.skin.toggle.padding.bottom
+                        )
+                    };
                 }
 
                 GUI.Label(new Rect(LeftPadding, 40, contentWidth, LineHeight), "Goal Song: " + RiftAP.apClient.slotData.goalSong);
