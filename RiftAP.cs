@@ -5,12 +5,17 @@ using System.Collections.Generic;
 using UnityEngine;
 using Shared.PlayerData;
 using HarmonyLib;
+using Shared.TrackData;
+using System.IO;
+using Shared;
+using System;
 
 namespace RiftArchipelago;
 
 public enum APState {
     Menu,
     InGame,
+    SongMenu,
     CustomMenu,
 }
 
@@ -20,6 +25,7 @@ public class RiftAP : RiftPlugin {
     public static ArchipelagoUI apUI;
     public static Dictionary<string, SongDatabaseData> songDatabaseDict;
     public static APState state;
+    public static List<ITrackMetadata> dynamicMetadataList;
 
     public static void ResetEverything() {
         foreach(SongDatabaseData song in songDatabaseDict.Values) {
@@ -58,5 +64,16 @@ public class RiftAP : RiftPlugin {
         var guiGameObject = new GameObject("AP UI");
         apUI = guiGameObject.AddComponent<ArchipelagoUI>();
         DontDestroyOnLoad(guiGameObject);
+    }
+
+    public static void DumpSongData() {
+        string path = Path.Combine(Directory.GetCurrentDirectory(), "Output");
+        int i = 90;
+        foreach(ITrackMetadata song in dynamicMetadataList) {
+            using(StreamWriter output = new StreamWriter(Path.Combine(path, "dlcsongdata.txt"), true)) {
+                output.WriteLine($"\"{song.TrackName}\": SongData({i}, \"{song.TrackName}\", \"{song.Counterpart}\", {song.GetDifficulty(Difficulty.Easy).Intensity}, {song.GetDifficulty(Difficulty.Medium).Intensity}, {song.GetDifficulty(Difficulty.Hard).Intensity}, {song.GetDifficulty(Difficulty.Impossible).Intensity})");
+            }
+            i++;
+        }
     }
 }

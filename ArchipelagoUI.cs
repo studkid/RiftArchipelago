@@ -152,6 +152,12 @@ namespace RiftArchipelago{
                         // RiftAP.apClient.Setup();
                     }
                 }
+
+                if(RiftAP.state == APState.SongMenu) {
+                    if(GUI.Button(new Rect(130, 110, 170, LineHeight), "Dump DLC Songs")) {
+                        RiftAP.DumpSongData();
+                    }
+                }
             }
             else if(RiftAP.state == APState.Menu && RiftAP.apClient.session != null) {
 

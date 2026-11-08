@@ -19,7 +19,7 @@ namespace RiftArchipelago.Patches{
     public static class TrackStatePatch {
         [HarmonyPrefix]
         public static void PreFix() {
-            RiftAP.state = APState.Menu;
+            RiftAP.state = APState.SongMenu;
         }
     }
 
@@ -51,7 +51,6 @@ namespace RiftArchipelago.Patches{
     public static class BBStatePatch {
         [HarmonyPrefix]
         public static void PreFix(StageController<TimelineMapPlayer> __instance) {
-
             RiftAP.state = APState.InGame;
         }
     }

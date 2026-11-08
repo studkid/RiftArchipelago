@@ -13,18 +13,8 @@ namespace RiftArchipelago.Patches{
         [HarmonyPrefix]
         public static void Prefix(ref List<ITrackMetadata> ____dynamicMetadataList) {
             // DLC Data Dump (Probably add some button/var that can toggle this instead of manually commenting this between releases lol)
-            // string path = Directory.GetCurrentDirectory();
-            // int i = 90;
-            // foreach(ITrackMetadata song in ____dynamicMetadataList) {
-            //     using(StreamWriter output = new StreamWriter(Path.Combine(path, "dlcdata.txt"), true)) {
-            //         output.WriteLine($"{{\"{song.TrackName}\", \"{song.LevelId}\"}},");
-            //     }
-
-            //     using(StreamWriter output = new StreamWriter(Path.Combine(path, "dlcsongdata.txt"), true)) {
-            //         output.WriteLine($"\"{song.TrackName}\": SongData({i}, \"{song.TrackName}\", \"{song.Counterpart}\", {song.GetDifficulty(Difficulty.Easy).Intensity}, {song.GetDifficulty(Difficulty.Medium).Intensity}, {song.GetDifficulty(Difficulty.Hard).Intensity}, {song.GetDifficulty(Difficulty.Impossible).Intensity}, False),");
-            //     }
-            //     i++;
-            // }
+            RiftAP.dynamicMetadataList = ____dynamicMetadataList;
+            Log.Info("AAAAAAAAAA" + RiftAP.dynamicMetadataList);
 
             if (!RiftAP.apClient.isAuthenticated || RiftAP.apClient.freePlay) return;
 
