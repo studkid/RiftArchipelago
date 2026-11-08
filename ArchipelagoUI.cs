@@ -65,9 +65,9 @@ namespace RiftArchipelago{
             }
 
             // Compute panel height based on visible content
-            bool inMenu = ArchipelagoClient.state == APState.Menu;
-            bool hasSession = ArchipelagoClient.session != null;
-            bool isAuthed = ArchipelagoClient.isAuthenticated;
+            bool inMenu = RiftAP.apClient.state == APState.Menu;
+            bool hasSession = RiftAP.apClient.session != null;
+            bool isAuthed = RiftAP.apClient.isAuthenticated;
             bool showLogin = (!hasSession || !isAuthed) && inMenu;
             bool showConnectedMenu = inMenu && hasSession;
 
@@ -93,8 +93,8 @@ namespace RiftArchipelago{
             }
 
             // Status
-            if (ArchipelagoClient.session != null) {
-                if (ArchipelagoClient.isAuthenticated) {
+            if (hasSession) {
+                if (isAuthed) {
                     GUI.Label(new Rect(LeftPadding, 20, contentWidth, LineHeight), "Status: Connected");
                 }
                 else if (failedLastAuthenticationAttempt) {
@@ -107,14 +107,14 @@ namespace RiftArchipelago{
                 GUI.Label(new Rect(LeftPadding, 20, contentWidth, LineHeight), "Status: Not Connected");
             }
 
-            if ((ArchipelagoClient.session == null || !ArchipelagoClient.isAuthenticated) && ArchipelagoClient.state == APState.Menu ) {
+            if ((RiftAP.apClient.session == null || !RiftAP.apClient.isAuthenticated) && RiftAP.apClient.state == APState.Menu ) {
                 // Labels
                 GUI.Label(new Rect(labelX, 40, LabelWidth, LineHeight), "Host:");
                 GUI.Label(new Rect(labelX, 60, LabelWidth, LineHeight), "Slot Name:");
                 GUI.Label(new Rect(labelX, 80, LabelWidth, LineHeight), "Password:");
 
                 bool submit = Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Return;
-                ArchipelagoInfo info = ArchipelagoClient.apInfo;
+                ArchipelagoInfo info = RiftAP.apClient.apInfo;
 
                 // Name each field, then draw it
                 GUI.SetNextControlName(CtrlHost);
@@ -141,19 +141,19 @@ namespace RiftArchipelago{
                 }
 
                 if ((GUI.Button(new Rect(LeftPadding, 110, 100, LineHeight), "Connect") || submit) && info.Valid) {
-                    bool success = ArchipelagoClient.Connect();
+                    bool success = RiftAP.apClient.Connect();
                     if (!success) failedLastAuthenticationAttempt = true;
                     PlayerPrefs.SetString(HostPrefKey, info.address);
                     PlayerPrefs.SetString(SlotPrefKey, info.slot);
                     hostInputCache = info.address;
                     slotInputCache = info.slot;
                     PlayerPrefs.Save();
-                    if(ArchipelagoClient.isAuthenticated) {
-                        ItemHandler.Setup();
+                    if(RiftAP.apClient.isAuthenticated) {
+                        // RiftAP.apClient.Setup();
                     }
                 }
             }
-            else if(ArchipelagoClient.state == APState.Menu && ArchipelagoClient.session != null) {
+            else if(RiftAP.apClient.state == APState.Menu && RiftAP.apClient.session != null) {
 
                 if (toggleLabelGapStyle == null) {
                     toggleLabelGapStyle = new GUIStyle(GUI.skin.toggle);
@@ -165,15 +165,15 @@ namespace RiftArchipelago{
                     );
                 }
 
-                GUI.Label(new Rect(LeftPadding, 40, contentWidth, LineHeight), "Goal Song: " + ArchipelagoClient.slotData.goalSong);
+                GUI.Label(new Rect(LeftPadding, 40, contentWidth, LineHeight), "Goal Song: " + RiftAP.apClient.slotData.goalSong);
                 
-                if(GUI.Button(new Rect(LeftPadding, 60, 150, LineHeight), "Free Play: " + ArchipelagoClient.freePlay)) {
-                    ArchipelagoClient.freePlay = !ArchipelagoClient.freePlay;
-                    ItemHandler.ResetLocked(ArchipelagoClient.freePlay);
+                if(GUI.Button(new Rect(LeftPadding, 60, 150, LineHeight), "Free Play: " + RiftAP.apClient.freePlay)) {
+                    RiftAP.apClient.freePlay = !RiftAP.apClient.freePlay;
+                    RiftAP.apClient.itemHandler.ResetLocked(RiftAP.apClient.freePlay);
                 }
 
                 if(GUI.Button(new Rect(LeftPadding, 85, 100, LineHeight), "Disconnect")) {
-                    ArchipelagoClient.Disconnect();
+                    RiftAP.ResetEverything();
                     failedLastAuthenticationAttempt = false;
                 }
             }

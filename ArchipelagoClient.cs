@@ -1,15 +1,16 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.BounceFeatures.DeathLink;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
+using HarmonyLib;
 using RhythmRift;
-using Shared.RhythmEngine;
+using UnityEngine;
+using RiftOfTheNecroManager;
 
 namespace RiftArchipelago;
 
@@ -18,25 +19,26 @@ public enum APState {
     InGame,
 }
 
-public static class ArchipelagoClient {
-    public static int[] AP_VERSION = {0, 6, 1};
+public class ArchipelagoClient : MonoBehaviour {
+    public int[] AP_VERSION = {0, 6, 7};
     public const string GAME_NAME = "Rift of the Necrodancer";
 
-    private static ConcurrentQueue<ItemInfo> _itemQueue = new();
-    public static bool isAuthenticated = false;
-    public static ArchipelagoInfo apInfo = new ArchipelagoInfo();
-    public static ArchipelagoUI apUI = new ArchipelagoUI();
-    public static APState state;
-    public static int slotID;
-    public static ArchipelagoSession session;
-    public static SlotData slotData;
-    public static bool isInGame = false;
-    public static DeathLinkState deathLink = DeathLinkState.Off;
-    public static DeathLinkService deathLinkService;
-    public static int deathLinkCooldown = 0;
-    public static RRStageController rrStageController;
-    public static bool freePlay = false;
-    public static List<string> unplayedSongs = [];
+    public ItemHandler itemHandler = new();
+    private ConcurrentQueue<ItemInfo> _itemQueue = new();
+    public bool isAuthenticated = false;
+    public ArchipelagoInfo apInfo = new ArchipelagoInfo();
+    public ArchipelagoUI apUI = new ArchipelagoUI();
+    public APState state;
+    public int slotID;
+    public ArchipelagoSession session;
+    public SlotData slotData;
+    public bool isInGame = false;
+    public DeathLinkState deathLink = DeathLinkState.Off;
+    public DeathLinkService deathLinkService;
+    public int deathLinkCooldown = 0;
+    public RRStageController rrStageController;
+    public bool freePlay = false;
+    public List<string> unplayedSongs = [];
 
     public enum DeathLinkState {
         Off = 0,
@@ -44,11 +46,11 @@ public static class ArchipelagoClient {
         On = 2
     }
 
-    public static string[] deathLinkMessages = [
+    public string[] deathLinkMessages = [
         "missed a beat.",
     ];
 
-    public static bool Connect() {
+    public bool Connect() {
         if (isAuthenticated) {
             return true;
         }
@@ -88,41 +90,43 @@ public static class ArchipelagoClient {
 
         return false;
     }
-
-    public static async void Disconnect() {
-        if(session is { Socket.Connected: true }) await session.Socket.DisconnectAsync(); 
-        ItemHandler.ResetEverything();
-        isAuthenticated = false;
-        slotData = null;
-        session = null;
-    }
     
-    public static void GoalGame() {
-        RiftAP.LogMsg(RiftAP.LogLevel.INFO, "Goal Reached!");
+    public void GoalGame() {
+        Log.Info("Goal Reached!");
         var statusUpdatePacket = new StatusUpdatePacket {
             Status = ArchipelagoClientState.ClientGoal
         };
         session.Socket.SendPacket(statusUpdatePacket);
     }
 
-    private static void Session_ItemReceived(ReceivedItemsHelper helper) {
+    private void Session_ItemReceived(ReceivedItemsHelper helper) {
         var item = helper.DequeueItem();
-        RiftAP.LogMsg(RiftAP.LogLevel.INFO, $"Item Recieved: {item.ItemDisplayName} | ID: {item.ItemId}");
 
-        if(item.ItemId == 1) { // Diamonds
-            ItemHandler.AddDiamond();
-        }
-        else if(item.ItemId >= 50 && item.ItemId < 1000) { // Rhythm Rifts
-            ItemHandler.UnlockSong(item.ItemName);
-        }
-        else if(item.ItemId >= 1000 && item.ItemId < 2000) { // Remixes
-            ItemHandler.UnlockRemix(item.ItemName.Substring(0, item.ItemName.Length - 8));
-        }
-        else if(item.ItemId >= 2000 && item.ItemId < 3000) { //Minigames/Bosses
-            ItemHandler.UnlockExtra(item.ItemName);
-        }
-        else if(item.ItemId >= 5000) { // Custom Rifts
-            ItemHandler.UnlockCustom(item.ItemName);
+        _itemQueue.Enqueue(item);
+    }
+
+    private void Update() {
+        if(!_itemQueue.IsEmpty) {
+            _itemQueue.TryDequeue(out var item);
+
+            Log.Info($"Item Recieved: {item.ItemDisplayName} | ID: {item.ItemId}");
+            Log.Info($"Slot Data Loaded: {slotData.remix}");
+
+            if(item.ItemId == 1) { // Diamonds
+                itemHandler.AddDiamond();
+            }
+            else if(item.ItemId >= 50 && item.ItemId < 1000) { // Rhythm Rifts
+                itemHandler.UnlockSong(item.ItemName);
+            }
+            else if(item.ItemId >= 1000 && item.ItemId < 2000) { // Remixes
+                itemHandler.UnlockRemix(item.ItemName.Substring(0, item.ItemName.Length - 8));
+            }
+            else if(item.ItemId >= 2000 && item.ItemId < 3000) { //Minigames/Bosses
+                itemHandler.UnlockExtra(item.ItemName);
+            }
+            else if(item.ItemId >= 5000) { // Custom Rifts
+                itemHandler.UnlockCustom(item.ItemName);
+            }
         }
     }
 
@@ -147,7 +151,7 @@ public static class ArchipelagoClient {
     // }
 
     // private static void OndeathLinkRecieved(DeathLink deathLink) {
-    //     RiftAP.LogMsg(RiftAP.LogLevel.INFO, $"Deathlink Recieved: {deathLink.Source} {deathLink.Cause}");
+    //     Log.Info($"Deathlink Recieved: {deathLink.Source} {deathLink.Cause}");
 
     //     // if(rrStageController == null || rrStageController._isPlayerBeenDefeated)
     // }

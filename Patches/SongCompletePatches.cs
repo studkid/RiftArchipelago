@@ -13,6 +13,7 @@ using System.Reflection;
 using Minigames;
 using BossBattles;
 using System.Linq;
+using RiftOfTheNecroManager;
 
 namespace RiftArchipelago.Patches {
     [HarmonyPatch(typeof(RRStageController), "CompleteStageAfterAllEnemiesHaveDiedRoutine")]
@@ -48,7 +49,7 @@ namespace RiftArchipelago.Patches {
         [HarmonyPostfix]
         public static void PostFix(RRStageController __instance, ref string ____customTrackAudioFilePath, ref IEnumerator __result) {
             // Invalid if not connected to Archipelago
-            if (!ArchipelagoClient.isAuthenticated || ArchipelagoClient.freePlay) return;
+            if (!RiftAP.apClient.isAuthenticated || RiftAP.apClient.freePlay) return;
 
 
             var original = __result;
@@ -64,7 +65,7 @@ namespace RiftArchipelago.Patches {
         public static void TrySendLocation(RRStageController __instance, string ____customTrackAudioFilePath) {
             try {
                 if (__instance == null) {
-                    RiftAP.LogMsg(RiftAP.LogLevel.ERR, "RRStageEnd PostFix: __instance == null");
+                    Log.Error("RRStageEnd PostFix: __instance == null");
                     return;
                 }
 
@@ -73,13 +74,13 @@ namespace RiftArchipelago.Patches {
                     GetPrivateFields(__instance);
                 }
                 catch (System.Exception ex) {
-                    RiftAP.LogMsg(RiftAP.LogLevel.ERR, $"Error getting private fields in RRStageEnd PostFix: {ex}");
+                    Log.Error($"Error getting private fields in RRStageEnd PostFix: {ex}");
                     return;
                 }
 
                 // Double check to ensure no null values
                 if (_letterGradeDefinitions == null || _stageInputRecord == null || _stageScenePayload == null) {
-                    RiftAP.LogMsg(RiftAP.LogLevel.WARN, "RRStageEnd PostFix: One or more private fields are null");
+                    Log.Warning("RRStageEnd PostFix: One or more private fields are null");
                     return;
                 }
 
@@ -104,7 +105,7 @@ namespace RiftArchipelago.Patches {
 
                 try {
                     if (VerifyCompletionRequirements(stageDisplayName, levelId, _stageScenePayload.GetLevelDifficulty(), SlotData.MapObjectToGrade(letter), wasFullCombo, _wereCheatsUsed)) {
-                        RiftAP.LogMsg(RiftAP.LogLevel.INFO, "Archipelago location verification validated");
+                        Log.Info("Archipelago location verification validated");
                         if(isPlayingCustomTrack) {
                             string songName = $"{stageDisplayName} [{levelId}]";
                             AP_RRLocationSend(songName.Replace("\'", ""), levelId, _stageScenePayload.GetLevelDifficulty(), _isRemixMode);
@@ -112,15 +113,15 @@ namespace RiftArchipelago.Patches {
                         AP_RRLocationSend(stageDisplayName, levelId, _stageScenePayload.GetLevelDifficulty(), _isRemixMode);
                     }
                     else {
-                        RiftAP.LogMsg(RiftAP.LogLevel.INFO, "Archipelago location verification failed. Not sending check.");
+                        Log.Info("Archipelago location verification failed. Not sending check.");
                     }
                 }
                 catch (System.Exception ex) {
-                    RiftAP.LogMsg(RiftAP.LogLevel.ERR, $"Error in APLocationSend: {ex}");
+                    Log.Error($"Error in APLocationSend: {ex}");
                 }
             }
             catch (System.Exception ex) {
-                RiftAP.LogMsg(RiftAP.LogLevel.ERR, $"Error in RRStageEnd PostFix: {ex}");
+                Log.Error($"Error in RRStageEnd PostFix: {ex}");
             }
         }
 
@@ -131,23 +132,23 @@ namespace RiftArchipelago.Patches {
 
             // Invalid if any illegal modes were detected
             if (_isTutorial || _isPracticeMode || _isDailyChallenge) {
-                RiftAP.LogMsg(RiftAP.LogLevel.INFO, "Tutorial, Practice, or Challenge mode detected.");
+                Log.Info("Tutorial, Practice, or Challenge mode detected.");
                 return false;
             }
 
             // Print out for debugging purposes
-            RiftAP.LogMsg(RiftAP.LogLevel.INFO, $"Song Completed! Stage: {stageDisplayName} | Level ID: {levelId} | Difficulty: {_stageScenePayload.GetLevelDifficulty()} | Remix Mode: {_isRemixMode}");
+            Log.Info($"Song Completed! Stage: {stageDisplayName} | Level ID: {levelId} | Difficulty: {_stageScenePayload.GetLevelDifficulty()} | Remix Mode: {_isRemixMode}");
 
             // Full combo check
-            if (ArchipelagoClient.slotData.fullComboNeeded && !isFullCombo) {
-                RiftAP.LogMsg(RiftAP.LogLevel.INFO, "Full Combo required but not achieved");
+            if (RiftAP.apClient.slotData.fullComboNeeded && !isFullCombo) {
+                Log.Info("Full Combo required but not achieved");
                 return false;
             }
 
             // Grade threshold check
-            SlotData.Grade gradeNeeded = ArchipelagoClient.slotData.gradeNeeded;
+            SlotData.Grade gradeNeeded = RiftAP.apClient.slotData.gradeNeeded;
             if (letterGrade < gradeNeeded) {
-                RiftAP.LogMsg(RiftAP.LogLevel.INFO, $"Grade {letterGrade} does not meet the requirement of {gradeNeeded}");
+                Log.Info($"Grade {letterGrade} does not meet the requirement of {gradeNeeded}");
                 return false;
             }
 
@@ -157,28 +158,28 @@ namespace RiftArchipelago.Patches {
         public static void AP_RRLocationSend(string stageDisplayName, string levelId, Difficulty difficulty, bool isRemixMode) {
             long locId = -1;
 
-            if (!ArchipelagoClient.slotData.remix || !isRemixMode) {
-                if (stageDisplayName == ArchipelagoClient.slotData.goalSong)
+            if (!RiftAP.apClient.slotData.remix || !isRemixMode) {
+                if (stageDisplayName == RiftAP.apClient.slotData.goalSong)
                 {
-                    ArchipelagoClient.GoalGame();
+                    RiftAP.apClient.GoalGame();
                 }
 
-                locId = ArchipelagoClient.session.Locations.GetLocationIdFromName("Rift of the Necrodancer", stageDisplayName + "-0");
+                locId = RiftAP.apClient.session.Locations.GetLocationIdFromName("Rift of the Necrodancer", stageDisplayName + "-0");
             }
             else {
-                if (stageDisplayName + " (Remix)" == ArchipelagoClient.slotData.goalSong) {
-                    ArchipelagoClient.GoalGame();
+                if (stageDisplayName + " (Remix)" == RiftAP.apClient.slotData.goalSong) {
+                    RiftAP.apClient.GoalGame();
                 }
 
-                locId = ArchipelagoClient.session.Locations.GetLocationIdFromName("Rift of the Necrodancer", stageDisplayName + " (Remix)-0");
+                locId = RiftAP.apClient.session.Locations.GetLocationIdFromName("Rift of the Necrodancer", stageDisplayName + " (Remix)-0");
             }
 
 
-            RiftAP.LogMsg(RiftAP.LogLevel.INFO, $"Sending {stageDisplayName} {locId}");
+            Log.Info($"Sending {stageDisplayName} {locId}");
 
             if (locId != -1) {
-                ArchipelagoClient.unplayedSongs.Remove(stageDisplayName);
-                ArchipelagoClient.session.Locations.CompleteLocationChecksAsync([locId, locId + 1]);
+                RiftAP.apClient.unplayedSongs.Remove(stageDisplayName);
+                RiftAP.apClient.session.Locations.CompleteLocationChecksAsync([locId, locId + 1]);
             }
         }
 
@@ -190,7 +191,7 @@ namespace RiftArchipelago.Patches {
                 try { beatmapPlayer = Traverse.Create(__instance).Field("BeatmapPlayer").GetValue(); } catch { }
             }
             if (beatmapPlayer == null) {
-                RiftAP.LogMsg(RiftAP.LogLevel.WARN, "RRStageEnd PostFix: BeatmapPlayer == null");
+                Log.Warning("RRStageEnd PostFix: BeatmapPlayer == null");
                 return;
             }
 
@@ -200,7 +201,7 @@ namespace RiftArchipelago.Patches {
                 try { _letterGradeDefinitions = Traverse.Create(beatmapPlayer).Field("LetterGradeDefinitions").GetValue<LetterGradeDefinitions>(); } catch { }
             }
             if (_letterGradeDefinitions == null) {
-                RiftAP.LogMsg(RiftAP.LogLevel.WARN, "RRStageEnd PostFix: LetterGradeDefinitions == null");
+                Log.Warning("RRStageEnd PostFix: LetterGradeDefinitions == null");
                 return;
             }
 
@@ -210,7 +211,7 @@ namespace RiftArchipelago.Patches {
                 try { _stageInputRecord = Traverse.Create(__instance).Field("_stageInputRecord").GetValue<StageInputRecord>(); } catch { }
             }
             if (_stageInputRecord == null) {
-                RiftAP.LogMsg(RiftAP.LogLevel.WARN, "RRStageEnd PostFix: _stageInputRecord == null");
+                Log.Warning("RRStageEnd PostFix: _stageInputRecord == null");
                 return;
             }
 
@@ -220,7 +221,7 @@ namespace RiftArchipelago.Patches {
                 try { _stageFlowUiController = Traverse.Create(__instance).Field("_stageFlowUiController").GetValue<StageFlowUiController>(); } catch { }
             }
             if (_stageFlowUiController == null) {
-                RiftAP.LogMsg(RiftAP.LogLevel.WARN, "RRStageEnd PostFix: _stageFlowUiController == null");
+                Log.Warning("RRStageEnd PostFix: _stageFlowUiController == null");
                 return;
             }
 
@@ -230,7 +231,7 @@ namespace RiftArchipelago.Patches {
                         | BindingFlags.Instance | BindingFlags.NonPublic, null, _stageFlowUiController, null);
             }
             catch (System.Exception e) {
-                RiftAP.LogMsg(RiftAP.LogLevel.WARN, e.StackTrace + e.Message);
+                Log.Warning(e.StackTrace + e.Message);
                 return;
             }
 
@@ -240,7 +241,7 @@ namespace RiftArchipelago.Patches {
                 try { _stageScenePayload = Traverse.Create(__instance).Field("_stageScenePayload").GetValue<StageScenePayload>(); } catch { }
             }
             if (_stageInputRecord == null) {
-                RiftAP.LogMsg(RiftAP.LogLevel.WARN, "RRStageEnd PostFix: _stageInputRecord == null");
+                Log.Warning("RRStageEnd PostFix: _stageInputRecord == null");
                 return;
             }
 
@@ -273,7 +274,7 @@ namespace RiftArchipelago.Patches {
     public static class APMGLocationSend {
         [HarmonyPostfix]
         public static void PostFix(ref IEnumerator __result, StageScenePayload ____stageScenePayload) {
-            if (!ArchipelagoClient.isAuthenticated) return;
+            if (!RiftAP.apClient.isAuthenticated) return;
 
             var original = __result;
             __result = Wrapper();
@@ -284,8 +285,8 @@ namespace RiftArchipelago.Patches {
                 string levelName = ItemHandler.extraMapping.FirstOrDefault(x => x.Value == ____stageScenePayload.GetLevelId()).Key;
                 Difficulty difficulty = ____stageScenePayload.GetLevelDifficulty();
 
-                RiftAP.LogMsg(RiftAP.LogLevel.INFO, "Minigame Cleared");
-                APExtraLocSend.sendExtra(levelName, difficulty, ArchipelagoClient.slotData.mgMode);
+                Log.Info("Minigame Cleared");
+                APExtraLocSend.sendExtra(levelName, difficulty, RiftAP.apClient.slotData.mgMode);
             }
         }
     }
@@ -295,7 +296,7 @@ namespace RiftArchipelago.Patches {
     public static class APBBLocationSend {
         [HarmonyPostfix]
         public static void PostFix(ref IEnumerator __result, StageScenePayload ____stageScenePayload, string ____levelId) {
-            if (!ArchipelagoClient.isAuthenticated) return;
+            if (!RiftAP.apClient.isAuthenticated) return;
 
             var original = __result;
             __result = Wrapper();
@@ -306,8 +307,8 @@ namespace RiftArchipelago.Patches {
                 string levelName = ItemHandler.extraMapping.FirstOrDefault(x => x.Value == ____levelId).Key;
                 Difficulty difficulty = ____stageScenePayload.GetLevelDifficulty();
 
-                RiftAP.LogMsg(RiftAP.LogLevel.INFO, "Boss Battle Cleared");
-                APExtraLocSend.sendExtra(levelName, difficulty, ArchipelagoClient.slotData.bbMode);
+                Log.Info("Boss Battle Cleared");
+                APExtraLocSend.sendExtra(levelName, difficulty, RiftAP.apClient.slotData.bbMode);
             }
         }
     }
@@ -317,24 +318,24 @@ namespace RiftArchipelago.Patches {
             long locId = -1;
 
             if (mode == 1) {
-                if (levelName == ArchipelagoClient.slotData.goalSong) {
-                    ArchipelagoClient.GoalGame();
+                if (levelName == RiftAP.apClient.slotData.goalSong) {
+                    RiftAP.apClient.GoalGame();
                 }
 
-                locId = ArchipelagoClient.session.Locations.GetLocationIdFromName("Rift of the Necrodancer", levelName + "-0");
+                locId = RiftAP.apClient.session.Locations.GetLocationIdFromName("Rift of the Necrodancer", levelName + "-0");
             }
             else if (mode == 2) {
-                if ($"{levelName} ({difficulty})" == ArchipelagoClient.slotData.goalSong) {
-                    ArchipelagoClient.GoalGame();
+                if ($"{levelName} ({difficulty})" == RiftAP.apClient.slotData.goalSong) {
+                    RiftAP.apClient.GoalGame();
                 }
 
-                locId = ArchipelagoClient.session.Locations.GetLocationIdFromName("Rift of the Necrodancer", $"{levelName} ({difficulty})-0");
+                locId = RiftAP.apClient.session.Locations.GetLocationIdFromName("Rift of the Necrodancer", $"{levelName} ({difficulty})-0");
             }
 
-            RiftAP.LogMsg(RiftAP.LogLevel.INFO, $"Sending {levelName} {locId}");
+            Log.Info($"Sending {levelName} {locId}");
 
             if (locId != -1) {
-                ArchipelagoClient.session.Locations.CompleteLocationChecksAsync([locId, locId + 1]);
+                RiftAP.apClient.session.Locations.CompleteLocationChecksAsync([locId, locId + 1]);
             }
         }
     }
@@ -343,9 +344,9 @@ namespace RiftArchipelago.Patches {
     public static class LeaderboardUploadOverride {
         // Prevent uploading scores to the leaderboard if connected to Archipelago
         private static bool Prefix(out Task<bool> __result) {
-            RiftAP.LogMsg(RiftAP.LogLevel.INFO, $"Uploading Score: {!ArchipelagoClient.isAuthenticated}");
+            Log.Info($"Uploading Score: {!RiftAP.apClient.isAuthenticated}");
             __result = Task.FromResult(false);
-            return !ArchipelagoClient.isAuthenticated;
+            return !RiftAP.apClient.isAuthenticated;
         }
     }
 }

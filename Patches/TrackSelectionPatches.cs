@@ -3,14 +3,15 @@ using Shared.TrackSelection;
 using TMPro;
 using Shared.TrackData;
 using System.Linq;
+using RiftOfTheNecroManager;
 
 namespace RiftArchipelago.Patches{
     [HarmonyPatch(typeof(TrackSelectionSceneController), "Update")]
     public static class UpdateDiamondText {
         [HarmonyPostfix]
         public static void PostFix(ref TMP_Text ____totalDiamondsText) {
-            if(!ArchipelagoClient.isAuthenticated) return;
-            ____totalDiamondsText.text = $"x{ItemHandler.diamondCount} / {ArchipelagoClient.slotData.diamondGoal}";
+            if(!RiftAP.apClient.isAuthenticated) return;
+            ____totalDiamondsText.text = $"x{RiftAP.apClient.itemHandler.diamondCount} / {RiftAP.apClient.slotData.diamondGoal}";
         }
     }
 
@@ -18,13 +19,13 @@ namespace RiftArchipelago.Patches{
     public static class UpdateFilter {
         [HarmonyPostfix]
         public static void PostFix(in ITrackMetadata[] metadataToFilter, TrackFilterOption filterOption, ref ITrackMetadata[] __result) {
-            if(!ArchipelagoClient.isAuthenticated) return;
+            if(!RiftAP.apClient.isAuthenticated) return;
             
             if(filterOption == TrackFilterOption.UnplayedSongs) {
-                RiftAP.LogMsg(RiftAP.LogLevel.INFO, "Sorting!");
+                Log.Info("Sorting!");
                 __result = metadataToFilter.Where(delegate (ITrackMetadata d) {
                     if(d.Category != TrackCategory.Tutorial) {
-                        return ArchipelagoClient.unplayedSongs.Contains(d.TrackName) && ItemHandler.IsUnlocked(d.TrackName);
+                        return RiftAP.apClient.unplayedSongs.Contains(d.TrackName) && RiftAP.apClient.itemHandler.IsUnlocked(d.TrackName);
                     }
                     return false;
                 }).ToArray();

@@ -1,25 +1,9 @@
-using UnityEngine;
 using HarmonyLib;
 using Shared.Title;
 using Shared.MenuOptions;
-using Shared.RhythmEngine;
+using RiftOfTheNecroManager;
 
 namespace RiftArchipelago.Patches{
-    [HarmonyPatch(typeof(MainMenuManager), "Awake")]
-    public static class APUIPatch {
-        [HarmonyPostfix]
-        public static void PostFix() {
-            CreateUI();
-        }
-
-        private static void CreateUI() {
-            if(ArchipelagoClient.apUI) return;
-            
-            var guiGameObject = new GameObject("AP");
-            ArchipelagoClient.apUI = guiGameObject.AddComponent<ArchipelagoUI>();
-            Object.DontDestroyOnLoad(guiGameObject);
-        }
-    }
 
     [HarmonyPatch(typeof(MainMenuManager), "Update")]
     public static class APUIUpdatePatch {
@@ -38,7 +22,7 @@ namespace RiftArchipelago.Patches{
             }
             if (_inputController == null)
             {
-                RiftAP.LogMsg(RiftAP.LogLevel.WARN, "RRStageEnd PostFix: _inputController == null");
+                Log.Warning("RRStageEnd PostFix: _inputController == null");
                 return;
             }
 
