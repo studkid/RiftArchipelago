@@ -65,7 +65,7 @@ namespace RiftArchipelago{
             }
 
             // Compute panel height based on visible content
-            bool inMenu = RiftAP.apClient.state == APState.Menu;
+            bool inMenu = RiftAP.state != APState.InGame;
             bool hasSession = RiftAP.apClient.session != null;
             bool isAuthed = RiftAP.apClient.isAuthenticated;
             bool showLogin = (!hasSession || !isAuthed) && inMenu;
@@ -107,7 +107,7 @@ namespace RiftArchipelago{
                 GUI.Label(new Rect(LeftPadding, 20, contentWidth, LineHeight), "Status: Not Connected");
             }
 
-            if ((RiftAP.apClient.session == null || !RiftAP.apClient.isAuthenticated) && RiftAP.apClient.state == APState.Menu ) {
+            if ((RiftAP.apClient.session == null || !RiftAP.apClient.isAuthenticated) && RiftAP.state != APState.InGame ) {
                 // Labels
                 GUI.Label(new Rect(labelX, 40, LabelWidth, LineHeight), "Host:");
                 GUI.Label(new Rect(labelX, 60, LabelWidth, LineHeight), "Slot Name:");
@@ -153,7 +153,7 @@ namespace RiftArchipelago{
                     }
                 }
             }
-            else if(RiftAP.apClient.state == APState.Menu && RiftAP.apClient.session != null) {
+            else if(RiftAP.state == APState.Menu && RiftAP.apClient.session != null) {
 
                 if (toggleLabelGapStyle == null) {
                     toggleLabelGapStyle = new GUIStyle(GUI.skin.toggle);

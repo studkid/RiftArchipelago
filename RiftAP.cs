@@ -8,11 +8,18 @@ using HarmonyLib;
 
 namespace RiftArchipelago;
 
+public enum APState {
+    Menu,
+    InGame,
+    CustomMenu,
+}
+
 [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 public class RiftAP : RiftPlugin {
     public static ArchipelagoClient apClient;
     public static ArchipelagoUI apUI;
     public static Dictionary<string, SongDatabaseData> songDatabaseDict;
+    public static APState state;
 
     public static void ResetEverything() {
         foreach(SongDatabaseData song in songDatabaseDict.Values) {
@@ -28,10 +35,11 @@ public class RiftAP : RiftPlugin {
     protected override void OnInit() {
         base.OnInit();
 
+        songDatabaseDict = SongDatabase._songDatabaseDict;
+        state = APState.Menu;
+
         CreateClient();
         CreateUI();
-
-        songDatabaseDict = SongDatabase._songDatabaseDict;
     }
 
     private static void CreateClient() {

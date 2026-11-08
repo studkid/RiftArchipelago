@@ -14,11 +14,6 @@ using RiftOfTheNecroManager;
 
 namespace RiftArchipelago;
 
-public enum APState {
-    Menu,
-    InGame,
-}
-
 public class ArchipelagoClient : MonoBehaviour {
     public int[] AP_VERSION = {0, 6, 7};
     public const string GAME_NAME = "Rift of the Necrodancer";
@@ -28,7 +23,6 @@ public class ArchipelagoClient : MonoBehaviour {
     public bool isAuthenticated = false;
     public ArchipelagoInfo apInfo = new ArchipelagoInfo();
     public ArchipelagoUI apUI = new ArchipelagoUI();
-    public APState state;
     public int slotID;
     public ArchipelagoSession session;
     public SlotData slotData;
@@ -74,7 +68,6 @@ public class ArchipelagoClient : MonoBehaviour {
 
         if (loginResult is LoginSuccessful loginSuccess) {
             isAuthenticated = true;
-            state = APState.Menu;
             slotData = new SlotData(loginSuccess.SlotData);
 
             session.Items.ItemReceived += Session_ItemReceived;
