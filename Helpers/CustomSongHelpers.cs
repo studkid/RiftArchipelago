@@ -7,6 +7,7 @@ using System;
 using Newtonsoft.Json;
 using RiftOfTheNecroManager;
 using Shared.PlayerData;
+using Archipelago.MultiClient.Net.Models;
 
 namespace RiftArchipelago.Helpers {
     public class CustomSongHelpers {
@@ -24,10 +25,19 @@ namespace RiftArchipelago.Helpers {
             foreach(ITrackMetadata song in customSongs) {
                 if(!PlayerDataUtil.IsLevelFavorite(song.LevelId)) continue;
 
-                if(song.LevelId.Substring(0, 2) == "ws") {
+                if(song.LevelId.Substring(0, 2) == "ws") {   
+                    long itemId = 0;
+                    try {
+                        itemId = Convert.ToInt64(song.LevelId.Substring(2));
+                    }
+                    catch (Exception e ){
+                        Log.Error($"saveCustomData: Failed to save custom song {song.TrackName} {song.LevelId}.\n{e}");
+                    }
+                    itemId = itemId - 3402139497 + 5000;
+
                     string songName = $"{song.TrackName} [{song.LevelId}]";
                     workshopSongDatas.Add(songName.Replace("\'", ""), new customSongData {                      
-                        code = song.LevelId.Substring(2),
+                        code = Convert.ToString(itemId % int.MaxValue),
                         song_id = song.LevelId,
                         DLC = "Workshop",
                         diff_easy = song.GetDifficulty(Difficulty.Easy)?.Intensity,
