@@ -11,6 +11,8 @@ using RhythmRift;
 using UnityEngine;
 using RiftOfTheNecroManager;
 using HarmonyLib;
+using Newtonsoft.Json.Linq;
+using RiftArchipelago.Patches;
 
 namespace RiftArchipelago;
 
@@ -42,7 +44,7 @@ public class ArchipelagoClient : MonoBehaviour {
         }
 
         session = ArchipelagoSessionFactory.CreateSession(apInfo.address);
-        // deathLinkService = session.CreateDeathLinkService();
+        deathLinkService = session.CreateDeathLinkService();
 
         string[] tags = [];
 
@@ -106,6 +108,9 @@ public class ArchipelagoClient : MonoBehaviour {
             if(item.ItemId == 1) { // Diamonds
                 itemHandler.AddDiamond();
             }
+            else if(item.ItemId >= 30 && item.ItemId < 50) {
+                TrapHelper.AddTrap(item.ItemName);
+            }
             else if(item.ItemId >= 50 && item.ItemId < 1000) { // Rhythm Rifts
                 itemHandler.UnlockSong(item.ItemName);
             }
@@ -123,5 +128,17 @@ public class ArchipelagoClient : MonoBehaviour {
 
     public void SendDeathLink(string msg) {
         deathLinkService.SendDeathLink(new DeathLink(apInfo.slot, msg));
+    }
+
+    private void Session_DeathlinkRecieved(Dictionary<string, JToken> packet) {
+
+
+        JToken cause = "";
+        JToken source = "";
+
+        packet.TryGetValue("source", out source);
+        packet.TryGetValue("cause", out cause);
+
+
     }
 }
