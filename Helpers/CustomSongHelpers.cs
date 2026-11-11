@@ -32,12 +32,18 @@ namespace RiftArchipelago.Helpers {
                     }
                     catch (Exception e ){
                         Log.Error($"saveCustomData: Failed to save custom song {song.TrackName} {song.LevelId}.\n{e}");
+                        continue;
                     }
-                    itemId = itemId - 3402139497 + 5000;
+                    itemId = itemId - 3402139497 + 6000 % int.MaxValue;
+
+                    if(itemId < 6000) {
+                        Log.Error($"saveCustomData: {song.TrackName} {song.LevelId} returned value {itemId} which is lower than allocated location ids, skipping!\nPlease contact @studkid in the RotN ap thread, DMs or in the RiftAP github issue tracker with the workshop link if you see this message!");
+                        continue;
+                    }
 
                     string songName = $"{song.TrackName} [{song.LevelId}]";
                     workshopSongDatas.Add(songName.Replace("\'", ""), new customSongData {                      
-                        code = Convert.ToString(itemId % int.MaxValue),
+                        code = Convert.ToString(itemId),
                         song_id = song.LevelId,
                         DLC = "Workshop",
                         diff_easy = song.GetDifficulty(Difficulty.Easy)?.Intensity,
