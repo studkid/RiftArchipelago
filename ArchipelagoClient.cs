@@ -7,10 +7,10 @@ using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
-using HarmonyLib;
 using RhythmRift;
 using UnityEngine;
 using RiftOfTheNecroManager;
+using HarmonyLib;
 
 namespace RiftArchipelago;
 
@@ -27,22 +27,10 @@ public class ArchipelagoClient : MonoBehaviour {
     public ArchipelagoSession session;
     public SlotData slotData;
     public bool isInGame = false;
-    public DeathLinkState deathLink = DeathLinkState.Off;
     public DeathLinkService deathLinkService;
-    public int deathLinkCooldown = 0;
     public RRStageController rrStageController;
     public bool freePlay = false;
     public List<string> unplayedSongs = [];
-
-    public enum DeathLinkState {
-        Off = 0,
-        NonLethal = 1,
-        On = 2
-    }
-
-    public string[] deathLinkMessages = [
-        "missed a beat.",
-    ];
 
     public bool Connect() {
         if (isAuthenticated) {
@@ -55,13 +43,23 @@ public class ArchipelagoClient : MonoBehaviour {
 
         session = ArchipelagoSessionFactory.CreateSession(apInfo.address);
         // deathLinkService = session.CreateDeathLinkService();
+
+        string[] tags = [];
+
+        if(Config.Settings.Deathlink != DeathLinkType.Off) {
+            tags.AddItem("DeathLink");
+        }
+
+        if(Config.Settings.Traplink) {
+            tags.AddItem("TrapLink");
+        }
         
         LoginResult loginResult = session.TryConnectAndLogin(
             GAME_NAME,
             apInfo.slot,
             ItemsHandlingFlags.AllItems,
             new Version(AP_VERSION[0], AP_VERSION[1], AP_VERSION[2]),
-            null,
+            tags,
             "",
             apInfo.password
         );
@@ -123,29 +121,7 @@ public class ArchipelagoClient : MonoBehaviour {
         }
     }
 
-    // public static void SetDeathLink() {
-    //     if(deathLink == DeathLinkState.On) {
-    //         deathLink = DeathLinkState.Off;
-    //         deathLinkService.DisableDeathLink();
-    //         return;
-    //     }
-
-    //     if(deathLink == DeathLinkState.Off) {
-    //         deathLinkService.EnableDeathLink();
-    //     }
-    //     deathLink++;
-    // }
-
-    // public static void SendDeathLink() {
-    //     if(deathLinkCooldown > 0) return;
-
-    //     Random rnd = new Random();
-    //     deathLinkService.SendDeathLink(new DeathLink(apInfo.slot, deathLinkMessages[rnd.Next(0, deathLinkMessages.Length)]));
-    // }
-
-    // private static void OndeathLinkRecieved(DeathLink deathLink) {
-    //     Log.Info($"Deathlink Recieved: {deathLink.Source} {deathLink.Cause}");
-
-    //     // if(rrStageController == null || rrStageController._isPlayerBeenDefeated)
-    // }
+    public void SendDeathLink(string msg) {
+        deathLinkService.SendDeathLink(new DeathLink(apInfo.slot, msg));
+    }
 }
