@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using HarmonyLib;
 using Shared.TrackData;
 using Shared;
 using System.IO;
@@ -7,7 +6,8 @@ using System;
 using Newtonsoft.Json;
 using RiftOfTheNecroManager;
 using Shared.PlayerData;
-using Archipelago.MultiClient.Net.Models;
+using System.Text.RegularExpressions;
+using System.Net;
 
 namespace RiftArchipelago.Helpers {
     public class CustomSongHelpers {
@@ -23,6 +23,10 @@ namespace RiftArchipelago.Helpers {
             Log.Info(customSongs.Count);
 
             foreach(ITrackMetadata song in customSongs) {
+                // Remove any color tags in 
+                string trackName = Regex.Replace(song.TrackName, "</?\\w+.*?>", string.Empty);
+                trackName = WebUtility.HtmlDecode(trackName);
+
                 if(!PlayerDataUtil.IsLevelFavorite(song.LevelId)) continue;
 
                 if(song.LevelId.Substring(0, 2) == "ws") {   
@@ -34,14 +38,14 @@ namespace RiftArchipelago.Helpers {
                         Log.Error($"saveCustomData: Failed to save custom song {song.TrackName} {song.LevelId}.\n{e}");
                         continue;
                     }
-                    itemId = itemId - 3402139497 + 6000 % int.MaxValue;
+                    itemId = (itemId - 3402139497 + 6000) % 2147483647;
 
                     if(itemId < 6000) {
                         Log.Error($"saveCustomData: {song.TrackName} {song.LevelId} returned value {itemId} which is lower than allocated location ids, skipping!\nPlease contact @studkid in the RotN ap thread, DMs or in the RiftAP github issue tracker with the workshop link if you see this message!");
                         continue;
                     }
 
-                    string songName = $"{song.TrackName} [{song.LevelId}]";
+                    string songName = $"{trackName} [{song.LevelId}]";
                     workshopSongDatas.Add(songName.Replace("\'", ""), new customSongData {                      
                         code = Convert.ToString(itemId),
                         song_id = song.LevelId,
@@ -55,7 +59,7 @@ namespace RiftArchipelago.Helpers {
                     workshopSongs =+ 1;
                 }
                 else {
-                    string songName = $"{song.TrackName} [{song.LevelId}]";
+                    string songName = $"{trackName} [{song.LevelId}]";
                     workshopSongDatas.Add(songName.Replace("\'", ""), new customSongData {
                         code = Convert.ToString(1 + localSongs),
                         song_id = song.LevelId,
