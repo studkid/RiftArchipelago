@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using RhythmRift;
+using RiftArchipelago;
 using RiftOfTheNecroManager;
 using UnityEngine;
 
@@ -17,8 +18,14 @@ namespace Helpers.RiftArchipelago {
 
         public NightmareGloom(RRStageController controller) {
             SetRandomNightmareDelay();
-            durationTimer = 60;
             gloomLanes = controller._obscureAnimators;
+
+            if(Config.Traps.nightmareTrapDur == -1) {
+                durationTimer = int.MaxValue;
+            }
+
+            durationTimer += Config.Traps.nightmareTrapDur;
+
             SetNewNightmareRow();
         }
 
@@ -75,7 +82,11 @@ namespace Helpers.RiftArchipelago {
                         controller._enigmaAnimator.SetTrigger("EnigmaOn");
                     }
 
-                    confuseTimer += 12;
+                    if(Config.Traps.mysteryTrapDur == -1) {
+                        confuseTimer = int.MaxValue;
+                    }
+
+                    confuseTimer += Config.Traps.mysteryTrapDur;
                 }
 
                 if(trap == "Gloom Trap") {
@@ -89,7 +100,11 @@ namespace Helpers.RiftArchipelago {
                         }
                     }
 
-                    gloomTimer += 12;
+                    if(Config.Traps.gloomTrapDur == -1) {
+                        gloomTimer = int.MaxValue;
+                    }
+
+                    gloomTimer += Config.Traps.gloomTrapDur;
                 }
 
                 if(trap == "Nightmare Trap") {
@@ -97,7 +112,11 @@ namespace Helpers.RiftArchipelago {
                 }
 
                 if(trap == "Coda Trap") {
-                    codaTimer += 12;
+                    if(Config.Traps.codaTrapDur == -1) {
+                        codaTimer = int.MaxValue;
+                    }
+
+                    codaTimer += Config.Traps.codaTrapDur;
                 }
 
                 if(trap == "Glass Trap") {
@@ -107,7 +126,11 @@ namespace Helpers.RiftArchipelago {
                         controller.UpdateUI();
                     }
 
-                    glassTimer += 12;
+                    if(Config.Traps.glassTrapDur == -1) {
+                        glassTimer = int.MaxValue;
+                    }
+
+                    glassTimer += Config.Traps.glassTrapDur;
                 }
             }
 

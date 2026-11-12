@@ -14,6 +14,7 @@ using Minigames;
 using BossBattles;
 using System.Linq;
 using RiftOfTheNecroManager;
+using Helpers.RiftArchipelago;
 
 namespace RiftArchipelago.Patches {
     [HarmonyPatch(typeof(RRStageController), "CompleteStageAfterAllEnemiesHaveDiedRoutine")]
@@ -51,6 +52,7 @@ namespace RiftArchipelago.Patches {
             // Invalid if not connected to Archipelago
             if (!RiftAP.apClient.isAuthenticated || RiftAP.apClient.freePlay) return;
 
+            TrapHelper.ResetTraps();
 
             var original = __result;
             __result = Wrapper(__instance, ____customTrackAudioFilePath);
