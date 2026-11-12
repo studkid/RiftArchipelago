@@ -14,6 +14,8 @@ namespace RiftArchipelago.Patches{
             if(Config.Settings.Deathlink != DeathLinkType.Off && !DeathlinkHelper.skipDeath) {
                 RiftAP.apClient.SendDeathLink(__instance._trackNameText.text);
             }
+            
+            TrapHelper.ResetTraps();
         }
     } 
 

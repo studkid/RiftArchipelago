@@ -8,8 +8,8 @@ namespace Helpers.RiftArchipelago {
 
     internal class NightmareGloom {
         private System.Random randomGenerator = new System.Random();
-        private int minSecondsBeforeChange = 10;
-        private int maxSecondsBeforeChange = 20;
+        private int minSecondsBeforeChange = 20;
+        private int maxSecondsBeforeChange = 30;
         private int changeTimer = 0;
         public int durationTimer { get; private set; }
         public int lane { get; private set; }
@@ -38,6 +38,12 @@ namespace Helpers.RiftArchipelago {
             }
 
             lane = randomGenerator.Next(0, gloomLanes.Count);
+            animator = gloomLanes[lane];
+            if((bool) animator) {
+                animator.SetTrigger("GloomOn");
+            }
+
+
             SetRandomNightmareDelay();
         }
 
@@ -54,6 +60,7 @@ namespace Helpers.RiftArchipelago {
         private static int codaTimer = -1;
         private static int glassTimer = -1;
         private static List<NightmareGloom> nightmares = new List<NightmareGloom>();
+        private static int lastPlayerHealth = 0;
 
         public static void AddTrap(string trapName) {
             trapQueue.Enqueue(trapName);
@@ -64,49 +71,56 @@ namespace Helpers.RiftArchipelago {
                 trapQueue.TryDequeue(out string trap);
 
                 if(trap == "Mystery Trap") {
-                    confuseTimer =+ 12;
+                    if(confuseTimer <= 0) {
+                        controller._enigmaAnimator.SetTrigger("EnigmaOn");
+                    }
+
+                    confuseTimer += 12;
                 }
 
                 if(trap == "Gloom Trap") {
-                    gloomTimer =+ 12;
+                    if(gloomTimer <= 0) {
+                        for (int i = 0; i < 3; i++) {
+                            Animator animator = controller._obscureAnimators[i];
+
+                            if ((bool)animator) {
+                                animator.SetTrigger("GloomOn");
+                            }
+                        }
+                    }
+
+                    gloomTimer += 12;
                 }
 
                 if(trap == "Nightmare Trap") {
                     nightmares.Add(new NightmareGloom(controller));
-                    Log.Info("Creating Nightmare: " + nightmares.Count);
                 }
 
                 if(trap == "Coda Trap") {
-                    codaTimer =+ 12;
+                    codaTimer += 12;
                 }
 
                 if(trap == "Glass Trap") {
-                    glassTimer =+ 12;
+                    if(glassTimer <= 0) {
+                        lastPlayerHealth = controller._playerController.CurrentHealth;
+                        controller._playerController.OverrideHealth(1, 1);
+                        controller.UpdateUI();
+                    }
+
+                    glassTimer += 12;
                 }
             }
 
             if(confuseTimer > 0) {
-                controller._enigmaAnimator.SetTrigger("EnigmaOn");
-
                 confuseTimer--;
-                Log.Info("Enigma Counter: " + confuseTimer);
             }
             else if(confuseTimer == 0) {
                 controller._enigmaAnimator.SetTrigger("EnigmaOff");
 
                 confuseTimer--;
-                Log.Info("Enigma Off!");
             }
 
             if(gloomTimer > 0) {
-                for (int i = 0; i < 3; i++) {
-                    Animator animator = controller._obscureAnimators[i];
-
-                    if ((bool)animator) {
-                        animator.SetTrigger("GloomOn");
-                    }
-            }
-
                 gloomTimer--;
             }
             else if(gloomTimer == 0) {
@@ -132,12 +146,6 @@ namespace Helpers.RiftArchipelago {
                     }
                     nightmares.Remove(nightmare);
                 } 
-                else {
-                    Animator animator = controller._obscureAnimators[nightmare.lane];
-                    if((bool) animator) {
-                        animator.SetTrigger("GloomOn");
-                    }
-                }
             }
 
             if(codaTimer > 0) {
@@ -145,13 +153,10 @@ namespace Helpers.RiftArchipelago {
             }
 
             if(glassTimer > 0) {
-                controller._playerController.OverrideHealth(1, 1);
-                controller.UpdateUI();
-
                 glassTimer--;
             }
             else if(glassTimer == 0) {
-                controller._playerController.OverrideHealth(10, 10);
+                controller._playerController.OverrideHealth(lastPlayerHealth, 10);
                 controller.UpdateUI();
 
                 glassTimer--;
@@ -168,6 +173,14 @@ namespace Helpers.RiftArchipelago {
             }
 
             return -1;
+        }
+
+        public static void ResetTraps() {
+            confuseTimer = -1;
+            gloomTimer = -1;
+            nightmares.Clear();
+            codaTimer = -1;
+            glassTimer = -1;
         }
     }
 }
