@@ -13,6 +13,7 @@ using RiftOfTheNecroManager;
 using HarmonyLib;
 using Newtonsoft.Json.Linq;
 using RiftArchipelago.Patches;
+using Helpers.RiftArchipelago;
 
 namespace RiftArchipelago;
 

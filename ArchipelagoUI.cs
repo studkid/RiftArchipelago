@@ -1,4 +1,6 @@
+using Helpers.RiftArchipelago;
 using RiftArchipelago.Helpers;
+using RiftArchipelago.Patches;
 using Shared.RhythmEngine;
 using UnityEngine;
 
@@ -36,6 +38,8 @@ namespace RiftArchipelago{
 
         // Global flag: true if any AP text field is focused
         public static bool AnyTextFieldFocused;
+        public static string curStage = "";
+        public static bool remix = false;
 
         private void Awake() {
             isMinimized = PlayerPrefs.GetInt(MinimizedPrefKey, 0) == 1;
@@ -69,7 +73,7 @@ namespace RiftArchipelago{
             bool inMenu = RiftAP.state != APState.InGame;
             bool hasSession = RiftAP.apClient.session != null;
             bool isAuthed = RiftAP.apClient.isAuthenticated;
-            bool showLogin = (!hasSession || !isAuthed) && inMenu;
+            bool showLogin = (!hasSession || !isAuthed) && inMenu || Config.Settings.Debug;
             bool showConnectedMenu = inMenu && hasSession;
 
             int panelHeight = 60; // base for status only
@@ -108,67 +112,91 @@ namespace RiftArchipelago{
                 GUI.Label(new Rect(LeftPadding, 20, contentWidth, LineHeight), "Status: Not Connected");
             }
 
-            if ((RiftAP.apClient.session == null || !RiftAP.apClient.isAuthenticated) && RiftAP.state != APState.InGame ) {
-                // Labels
-                GUI.Label(new Rect(labelX, 40, LabelWidth, LineHeight), "Host:");
-                GUI.Label(new Rect(labelX, 60, LabelWidth, LineHeight), "Slot Name:");
-                GUI.Label(new Rect(labelX, 80, LabelWidth, LineHeight), "Password:");
-
-                bool submit = Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Return;
-                ArchipelagoInfo info = RiftAP.apClient.apInfo;
-
-                // Name each field, then draw it
-                GUI.SetNextControlName(CtrlHost);
-                hostInputCache = GUI.TextField(new Rect(fieldX, 40, fieldWidth, LineHeight), hostInputCache);
-
-                GUI.SetNextControlName(CtrlSlot);
-                slotInputCache = GUI.TextField(new Rect(fieldX, 60, fieldWidth, LineHeight), slotInputCache);
-
-                GUI.SetNextControlName(CtrlPass);
-                passwordInputCache = GUI.PasswordField(new Rect(fieldX, 80, fieldWidth, LineHeight), passwordInputCache, '*');
-
-                // Push current input values into info
-                info.address = hostInputCache;
-                info.slot = slotInputCache;
-                info.password = passwordInputCache;
-
-                // Update global focus flag
-                string focused = GUI.GetNameOfFocusedControl();
-                AnyTextFieldFocused = focused == CtrlHost || focused == CtrlSlot || focused == CtrlPass;
-
-                if (submit && Event.current.type == EventType.KeyDown) {
-                    // The text fields have not consumed the event, which means they were not focused.
-                    submit = false;
-                }
-
-                if ((GUI.Button(new Rect(LeftPadding, 110, 100, LineHeight), "Connect") || submit) && info.Valid) {
-                    bool success = RiftAP.apClient.Connect();
-                    if (!success) failedLastAuthenticationAttempt = true;
-                    PlayerPrefs.SetString(HostPrefKey, info.address);
-                    PlayerPrefs.SetString(SlotPrefKey, info.slot);
-                    hostInputCache = info.address;
-                    slotInputCache = info.slot;
-                    PlayerPrefs.Save();
-                    if(RiftAP.apClient.isAuthenticated) {
-                        // RiftAP.apClient.Setup();
+            if(RiftAP.apClient.session == null || !RiftAP.apClient.isAuthenticated) {
+                if(RiftAP.state == APState.InGame && Config.Settings.Debug) { // Debug Testing
+                    GUI.Label(new Rect(LeftPadding, 40, contentWidth, LineHeight), "Current Song: " + curStage);
+                    
+                    if(GUI.Button(new Rect(LeftPadding, 60, 150, LineHeight), "Mystery Trap")) {
+                        TrapHelper.AddTrap("Mystery Trap");
+                    }
+                    if(GUI.Button(new Rect(LeftPadding + 160, 60, 150, LineHeight), "Gloom Trap")) {
+                        TrapHelper.AddTrap("Gloom Trap");
+                    }
+                    if(GUI.Button(new Rect(LeftPadding, 85, 150, LineHeight), "Nightmare Trap")) {
+                        TrapHelper.AddTrap("Nightmare Trap");
+                    }
+                    if(GUI.Button(new Rect(LeftPadding + 160, 85, 150, LineHeight), "Coda Trap")) {
+                        TrapHelper.AddTrap("Coda Trap");
+                    }
+                    if(GUI.Button(new Rect(LeftPadding, 110, 150, LineHeight), "Glass Trap")) {
+                        TrapHelper.AddTrap("Glass Trap");
+                    }
+                    if(GUI.Button(new Rect(LeftPadding + 160, 110, 150, LineHeight), "Test Deathlink")) {
+                        DeathlinkHelper.RecieveDeath();
                     }
                 }
+                else {
+                    // Labels
+                    GUI.Label(new Rect(labelX, 40, LabelWidth, LineHeight), "Host:");
+                    GUI.Label(new Rect(labelX, 60, LabelWidth, LineHeight), "Slot Name:");
+                    GUI.Label(new Rect(labelX, 80, LabelWidth, LineHeight), "Password:");
 
-                if(RiftAP.state == APState.SongMenu) {
-                    if(GUI.Button(new Rect(130, 110, 170, LineHeight), "Dump DLC Songs")) {
-                        RiftAP.DumpSongData();
+                    bool submit = Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Return;
+                    ArchipelagoInfo info = RiftAP.apClient.apInfo;
+
+                    // Name each field, then draw it
+                    GUI.SetNextControlName(CtrlHost);
+                    hostInputCache = GUI.TextField(new Rect(fieldX, 40, fieldWidth, LineHeight), hostInputCache);
+
+                    GUI.SetNextControlName(CtrlSlot);
+                    slotInputCache = GUI.TextField(new Rect(fieldX, 60, fieldWidth, LineHeight), slotInputCache);
+
+                    GUI.SetNextControlName(CtrlPass);
+                    passwordInputCache = GUI.PasswordField(new Rect(fieldX, 80, fieldWidth, LineHeight), passwordInputCache, '*');
+
+                    // Push current input values into info
+                    info.address = hostInputCache;
+                    info.slot = slotInputCache;
+                    info.password = passwordInputCache;
+
+                    // Update global focus flag
+                    string focused = GUI.GetNameOfFocusedControl();
+                    AnyTextFieldFocused = focused == CtrlHost || focused == CtrlSlot || focused == CtrlPass;
+
+                    if (submit && Event.current.type == EventType.KeyDown) {
+                        // The text fields have not consumed the event, which means they were not focused.
+                        submit = false;
                     }
-                }
 
-                if(RiftAP.state == APState.CustomMenu) {
-                    if(GUI.Button(new Rect(130, 110, 170, LineHeight), "Dump Favorited Songs")) {
-                        CustomSongHelpers.saveCustomData();
+                    if ((GUI.Button(new Rect(LeftPadding, 110, 100, LineHeight), "Connect") || submit) && info.Valid) {
+                        bool success = RiftAP.apClient.Connect();
+                        if (!success) failedLastAuthenticationAttempt = true;
+                        PlayerPrefs.SetString(HostPrefKey, info.address);
+                        PlayerPrefs.SetString(SlotPrefKey, info.slot);
+                        hostInputCache = info.address;
+                        slotInputCache = info.slot;
+                        PlayerPrefs.Save();
+                        if(RiftAP.apClient.isAuthenticated) {
+                            // RiftAP.apClient.Setup();
+                        }
                     }
-                }
 
-                GUI.Label(new Rect(labelX, 140, 250, LineHeight), "Press Left Alt to Reveal Cursor.");
+                    if(RiftAP.state == APState.SongMenu && Config.Settings.Debug) {
+                        if(GUI.Button(new Rect(130, 110, 170, LineHeight), "Dump DLC Songs")) {
+                            RiftAP.DumpSongData();
+                        }
+                    }
+
+                    if(RiftAP.state == APState.CustomMenu) {
+                        if(GUI.Button(new Rect(130, 110, 170, LineHeight), "Dump Favorited Songs")) {
+                            CustomSongHelpers.saveCustomData();
+                        }
+                    }
+
+                    GUI.Label(new Rect(labelX, 140, 250, LineHeight), "Press Left Alt to Reveal Cursor.");
+                }
             }
-            else if(RiftAP.state == APState.Menu && RiftAP.apClient.session != null) {
+            else if(RiftAP.apClient.session != null) {
 
                 if (toggleLabelGapStyle == null) {
                     toggleLabelGapStyle = new GUIStyle(GUI.skin.toggle) {
@@ -183,14 +211,24 @@ namespace RiftArchipelago{
 
                 GUI.Label(new Rect(LeftPadding, 40, contentWidth, LineHeight), "Goal Song: " + RiftAP.apClient.slotData.goalSong);
                 
-                if(GUI.Button(new Rect(LeftPadding, 60, 150, LineHeight), "Free Play: " + RiftAP.apClient.freePlay)) {
-                    RiftAP.apClient.freePlay = !RiftAP.apClient.freePlay;
-                    RiftAP.apClient.itemHandler.ResetLocked(RiftAP.apClient.freePlay);
+
+                if(RiftAP.state != APState.InGame) {
+                    if(GUI.Button(new Rect(LeftPadding, 60, 150, LineHeight), "Free Play: " + RiftAP.apClient.freePlay)) {
+                        RiftAP.apClient.freePlay = !RiftAP.apClient.freePlay;
+                        RiftAP.apClient.itemHandler.ResetLocked(RiftAP.apClient.freePlay);
+                    }
+
+                    if(GUI.Button(new Rect(LeftPadding, 85, 100, LineHeight), "Disconnect")) {
+                        RiftAP.ResetEverything();
+                        failedLastAuthenticationAttempt = false;
+                    }
                 }
 
-                if(GUI.Button(new Rect(LeftPadding, 85, 100, LineHeight), "Disconnect")) {
-                    RiftAP.ResetEverything();
-                    failedLastAuthenticationAttempt = false;
+                else if(Config.Settings.Debug) {
+                    GUI.Label(new Rect(LeftPadding, 60, contentWidth, LineHeight), "Current Song: " + curStage);
+                    if(GUI.Button(new Rect(LeftPadding, 80, 150, LineHeight), "Complete Song")) {
+                        RRCompleteStage.AP_RRLocationSend(curStage, "", Shared.Difficulty.Impossible, remix);
+                    }
                 }
             }
 
