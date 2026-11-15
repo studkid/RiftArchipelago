@@ -1,3 +1,4 @@
+using System.Collections;
 using BossBattles;
 using HarmonyLib;
 using Helpers.RiftArchipelago;
@@ -7,15 +8,23 @@ using Shared.Pins;
 using Shared.SceneLoading.Payloads;
 
 namespace RiftArchipelago.Patches{
-    [HarmonyPatch(typeof(RRStageController), "HandlePlayerDefeat")]
+    [HarmonyPatch(typeof(RRStageController), "HandlePlayerDeathRoutine")]
     public static class SendRRDeathLink {
         [HarmonyPostfix]
-        public static void PostFix(RRStageController __instance) {
+        public static void PostFix(RRStageController __instance, ref IEnumerator __result) {
+            var original = __result;
+            __result = Wrapper();
+
+            TrapHelper.ResetTraps();
+
+            if (!RiftAP.apClient.isAuthenticated || RiftAP.apClient.freePlay) return;
             if(Config.Settings.Deathlink != DeathLinkType.Off && !DeathlinkHelper.skipDeath) {
                 RiftAP.apClient.SendDeathLink(__instance._trackNameText.text);
             }
-            
-            TrapHelper.ResetTraps();
+                
+            IEnumerator Wrapper() {
+                yield return original;
+            }
         }
     } 
 
@@ -67,6 +76,14 @@ namespace RiftArchipelago.Patches{
             if(TrapHelper.getTimer(pinName) > 0) {
                 __result = true;
             }
+        }
+    }
+
+    [HarmonyPatch(typeof(RRGridView), "InitTiles")]
+    public static class UpscrollTrap {
+        [HarmonyPostfix]
+        public static void Postfix(RRGridView __instance) {
+            TrapHelper.UpscrollTrap(__instance);
         }
     }
 }

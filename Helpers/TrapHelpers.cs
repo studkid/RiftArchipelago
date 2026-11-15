@@ -1,8 +1,11 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using RhythmRift;
 using RiftArchipelago;
 using RiftOfTheNecroManager;
+using Shared;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace Helpers.RiftArchipelago {
@@ -66,14 +69,17 @@ namespace Helpers.RiftArchipelago {
         private static int gloomTimer = -1;
         private static int codaTimer = -1;
         private static int glassTimer = -1;
-        private static List<NightmareGloom> nightmares = new List<NightmareGloom>();
         private static int lastPlayerHealth = 0;
+        private static List<NightmareGloom> nightmares = new List<NightmareGloom>();
+        private static int upScrollCount = 0;
+        private static bool upScrollActive = false;
 
         public static void AddTrap(string trapName) {
             trapQueue.Enqueue(trapName);
         }
 
         internal static void RunTraps(RRStageController controller) {
+            // Trap Queuing
             if(!trapQueue.IsEmpty) {
                 trapQueue.TryDequeue(out string trap);
 
@@ -132,8 +138,13 @@ namespace Helpers.RiftArchipelago {
 
                     glassTimer += Config.Traps.glassTrapDur;
                 }
+
+                if(trap == "Upscroll Trap") {
+                    upScrollCount++;
+                }
             }
 
+            // Trap Timer Handling
             if(confuseTimer > 0) {
                 confuseTimer--;
             }
@@ -186,6 +197,30 @@ namespace Helpers.RiftArchipelago {
             }
         }
 
+        public static void UpscrollTrap(RRGridView grid) {
+            if(upScrollCount <= 0) return;
+            int[] invertKey = [8, 7, 6, 5, 4, 3, 2, 1, 0, -1, -2, -3];
+            Dictionary<int2, Vector3> refGrid = grid._tileViewsByGridPosition.ToDictionary(entry => entry.Key, entry => entry.Value.gameObject.transform.position);
+
+            foreach(KeyValuePair<int2, Vector3> pair in refGrid) {
+                int2 pos = pair.Key;
+                RRTileView tile = grid._tileViewsByGridPosition[pos];
+                int curY = pos.y;
+                int curX = pos.x;
+
+                Log.Info($"{curX}, {invertKey[curY + 3]}");
+                tile.gameObject.transform.position = refGrid[new int2(curX, invertKey[curY + 3])];
+            }
+
+            int arrY = 0;
+            foreach(RRArrowView arrow in grid._arrows) {
+                arrow.gameObject.transform.position = refGrid[new int2(arrY, 5)];
+                arrY++;
+            }
+
+            upScrollActive = true;
+        }
+
         public static int getTimer(string timer) {
             if(timer == "Enigma") {
                 return confuseTimer;
@@ -204,6 +239,10 @@ namespace Helpers.RiftArchipelago {
             nightmares.Clear();
             codaTimer = -1;
             glassTimer = -1;
+            if(upScrollActive) {
+                upScrollCount--;
+                upScrollActive = false;
+            }
         }
     }
 }

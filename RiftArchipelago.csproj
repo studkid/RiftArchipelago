@@ -40,5 +40,8 @@
     <Reference Include="RiftOfTheNecroManager">
       <HintPath>.\lib\RiftOfTheNecroManager</HintPath>
     </Reference>
+    <Reference Include="Unity.Mathematics">
+      <HintPath>.\lib\Unity.Mathematics.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

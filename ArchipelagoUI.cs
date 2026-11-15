@@ -134,6 +134,9 @@ namespace RiftArchipelago{
                     if(GUI.Button(new Rect(LeftPadding + 160, 110, 150, LineHeight), "Test Deathlink")) {
                         DeathlinkHelper.RecieveDeath();
                     }
+                    if(GUI.Button(new Rect(LeftPadding, 135, 150, LineHeight), "Upscroll Trap")) {
+                        TrapHelper.AddTrap("Upscroll Trap");
+                    }
                 }
                 else {
                     // Labels
