@@ -22,7 +22,9 @@ public static class Config {
     public static class Settings {
         const string GROUP = "Settings";
         public static Setting<DeathLinkType> Deathlink { get; } = new(GROUP, "Deathlink", DeathLinkType.Off, "Enable Deathlink.\nNonLethal will take you down to 1 life on recieving a deathlink.");
+        public static Setting<string> DeathLinkGroup { get; } = new(GROUP, "Deathlink Group", "", "Set Deathlink Group.\nLeave blank to keep it set to global");
         public static Setting<bool> Traplink { get; } = new(GROUP, "Traplink", false, "Allows you to send and recieve traps from other traplink players.");
+        public static Setting<bool> TraplinkConvert { get; } = new(GROUP, "Convert Unsupported Traplinks", false, "Any recieved Traplinks that don't correspond to an existing trap will be converted into a random one.");
         // public static Setting<bool> EnergyLink { get; } = new(GROUP, "Energylink", false, "Sends score at song completion to the energylink buffer.");
         public static Setting<bool> Debug { get; } = new(GROUP, "Debug Mode", false, "When enabled, enables certain debug buttons.");
     }

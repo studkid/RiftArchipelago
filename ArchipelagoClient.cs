@@ -14,6 +14,7 @@ using HarmonyLib;
 using Newtonsoft.Json.Linq;
 using RiftArchipelago.Patches;
 using Helpers.RiftArchipelago;
+using Archipelago.MultiClient.Net.Converters;
 
 namespace RiftArchipelago;
 
@@ -30,7 +31,6 @@ public class ArchipelagoClient : MonoBehaviour {
     public ArchipelagoSession session;
     public SlotData slotData;
     public bool isInGame = false;
-    public DeathLinkService deathLinkService;
     public RRStageController rrStageController;
     public bool freePlay = false;
     public List<string> unplayedSongs = [];
@@ -53,12 +53,11 @@ public class ArchipelagoClient : MonoBehaviour {
         }
 
         session = ArchipelagoSessionFactory.CreateSession(apInfo.address);
-        deathLinkService = session.CreateDeathLinkService();
 
         string[] tags = [];
 
         if(Config.Settings.Deathlink != DeathLinkType.Off) {
-            tags.AddItem("DeathLink");
+            tags.AddItem("DeathLink" + Config.Settings.DeathLinkGroup);
         }
 
         if(Config.Settings.Traplink) {
@@ -80,6 +79,7 @@ public class ArchipelagoClient : MonoBehaviour {
             slotData = new SlotData(loginSuccess.SlotData);
 
             session.Items.ItemReceived += Session_ItemReceived;
+            session.Socket.PacketReceived += Socket_PacketRecived;
 
             foreach(long location in session.Locations.AllMissingLocations) {
                 string locName = session.Locations.GetLocationNameFromId(location);
@@ -131,6 +131,9 @@ public class ArchipelagoClient : MonoBehaviour {
                 if(trapCount[item.ItemName] > TrapHelper.trapCount[item.ItemName]) {
                     TrapHelper.AddTrap(item.ItemName);
                     AddTrapToStorage(item.ItemName);
+                    if(Config.Settings.Traplink) {
+                        SendTrapLink(item.ItemName);
+                    }
                 }
             }
             else if(item.ItemId >= 50 && item.ItemId < 1000) { // Rhythm Rifts
@@ -149,20 +152,87 @@ public class ArchipelagoClient : MonoBehaviour {
     }
 
     public void SendDeathLink(string msg) {
-        deathLinkService.SendDeathLink(new DeathLink(apInfo.slot, msg));
+        BouncedPacket packet = new BouncedPacket() {
+            Tags = ["DeathLink" + Config.Settings.DeathLinkGroup],
+            Data = new() {
+                { "time", DateTime.UtcNow.ToUnixTimeStamp() },
+                { "source", session.Players.GetPlayerName(session.ConnectionInfo.Slot) },
+                { "cause", msg },
+            }
+        };
+        session.Socket.SendPacket(packet);
     }
 
-    private void Session_DeathlinkRecieved(Dictionary<string, JToken> packet) {
-        JToken cause;
-        JToken source;
-
-        DeathlinkHelper.RecieveDeath(); 
-        packet.TryGetValue("source", out source);
-        packet.TryGetValue("cause", out cause);
-        Log.Info($"{source} {cause}");
-    }
-
-    public void AddTrapToStorage(string trapName) {
+    private void AddTrapToStorage(string trapName) {
         session.DataStorage[trapName]++;
+    }
+
+    private void SendTrapLink(string trapName) {
+        BouncedPacket packet = new BouncedPacket() {
+            Tags = ["TrapLink"],
+            Data = new() {
+                { "time", DateTime.UtcNow.ToUnixTimeStamp() },
+                { "source", session.Players.GetPlayerName(session.ConnectionInfo.Slot) },
+                { "trap_name", trapName },
+            }
+        };
+        session.Socket.SendPacket(packet);
+    }
+    
+    private void ParseTrapLinkAlias(string trapName) {
+        System.Random rand = new System.Random();
+        int index;
+        List<string> traps;
+        if(trapName == "Confuse Trap") {
+            TrapHelper.AddTrap("Mystery Trap");
+        }
+        else if(trapName == "Blue Balls Curse" || trapName == "One hit KO" || trapName == "One Hit Trap") {
+            TrapHelper.AddTrap("Glass Trap");
+        }
+        else if(trapName == "Flip Trap" || trapName == "Flip Vertical Trap" || trapName == "Reversal Trap" || trapName == "Reverse Trap") {
+            TrapHelper.AddTrap("Upscroll Trap");
+        }
+        else if(trapName == "Hidden") {
+            TrapHelper.AddTrap("Gloom Trap");
+        }
+        else if(trapName == "Chart Modifier Trap") {
+            traps = new List<string>{"Mystery Trap", "Gloom Trap", "Nightmare Trap"};
+            index = rand.Next(traps.Count);
+            TrapHelper.AddTrap(traps[index]);
+        }
+        else if(Config.Settings.TraplinkConvert) {
+            traps = new List<string>{"Mystery Trap", "Gloom Trap", "Nightmare Trap", "Coda Trap", "Glass Trap", "Upscroll Trap"};
+            index = rand.Next(traps.Count);
+            TrapHelper.AddTrap(traps[index]);
+        }
+
+        TrapHelper.AddTrap(trapName);
+    }
+
+    private void Socket_PacketRecived(ArchipelagoPacketBase packet) {
+        try {
+            switch(packet) {
+                case BouncePacket bouncedPacket when bouncedPacket.Tags.Contains("TrapLink"):
+                    var data = bouncedPacket.Data;
+                    var uuid = (string)data["source"];
+                    if(uuid == session.Players.GetPlayerName(session.ConnectionInfo.Slot)) return;
+
+                    var source = (string)data["source"];
+                    var trapName = (string)data["trap_name"];
+                    Log.Info($"Received {trapName} from {source}");
+                    ParseTrapLinkAlias(trapName);
+                    break;
+                case BouncedPacket bouncedPacket when bouncedPacket.Tags.Contains("DeathLink"):
+                    data = bouncedPacket.Data;
+                    uuid = (string)data["source"];
+                    if(uuid == session.Players.GetPlayerName(session.ConnectionInfo.Slot)) return;
+
+                    source = (string)data["source"];
+                    var cause = (string)data["cause"];
+                    Log.Info($"{source} {cause}");
+                    break;
+            }
+        }
+        catch { }
     }
 }
