@@ -34,6 +34,14 @@ public class ArchipelagoClient : MonoBehaviour {
     public RRStageController rrStageController;
     public bool freePlay = false;
     public List<string> unplayedSongs = [];
+    public static Dictionary<string, int> trapCount = new Dictionary<string, int>() {
+            {"Mystery Trap", 0},
+            {"Gloom Trap", 0},
+            {"Nightmare Trap", 0},
+            {"Coda Trap", 0},
+            {"Glass Trap", 0},
+            {"Upscroll Trap", 0},
+        };
 
     public bool Connect() {
         if (isAuthenticated) {
@@ -78,11 +86,20 @@ public class ArchipelagoClient : MonoBehaviour {
                 unplayedSongs.Add(slotData.goalSong);
                 unplayedSongs.Add(locName.Substring(0, locName.Length - 2));
             }
+
+            ProcessTrapData();
             
             return true;
         }
 
         return false;
+    }
+
+    private void ProcessTrapData() {
+        foreach(string trap in TrapHelper.trapCount.Keys) {
+            session.DataStorage[trap].Initialize(0);
+            TrapHelper.trapCount[trap] = session.DataStorage[trap];
+        }
     }
     
     public void GoalGame() {
@@ -110,7 +127,11 @@ public class ArchipelagoClient : MonoBehaviour {
                 itemHandler.AddDiamond();
             }
             else if(item.ItemId >= 30 && item.ItemId < 50) {
-                TrapHelper.AddTrap(item.ItemName);
+                trapCount[item.ItemName]++;
+                if(trapCount[item.ItemName] > TrapHelper.trapCount[item.ItemName]) {
+                    TrapHelper.AddTrap(item.ItemName);
+                    AddTrapToStorage(item.ItemName);
+                }
             }
             else if(item.ItemId >= 50 && item.ItemId < 1000) { // Rhythm Rifts
                 itemHandler.UnlockSong(item.ItemName);
@@ -132,14 +153,16 @@ public class ArchipelagoClient : MonoBehaviour {
     }
 
     private void Session_DeathlinkRecieved(Dictionary<string, JToken> packet) {
+        JToken cause;
+        JToken source;
 
-
-        JToken cause = "";
-        JToken source = "";
-
+        DeathlinkHelper.RecieveDeath(); 
         packet.TryGetValue("source", out source);
         packet.TryGetValue("cause", out cause);
+        Log.Info($"{source} {cause}");
+    }
 
-
+    public void AddTrapToStorage(string trapName) {
+        session.DataStorage[trapName]++;
     }
 }

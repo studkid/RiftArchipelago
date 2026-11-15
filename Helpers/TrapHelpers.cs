@@ -63,7 +63,14 @@ namespace Helpers.RiftArchipelago {
     }
 
     internal static class TrapHelper {
-        
+        public static Dictionary<string, int> trapCount = new Dictionary<string, int>() {
+            {"Mystery Trap", 0},
+            {"Gloom Trap", 0},
+            {"Nightmare Trap", 0},
+            {"Coda Trap", 0},
+            {"Glass Trap", 0},
+            {"Upscroll Trap", 0},
+        };
         private static ConcurrentQueue<string> trapQueue = new ConcurrentQueue<string>();
         private static int confuseTimer = -1;
         private static int gloomTimer = -1;
