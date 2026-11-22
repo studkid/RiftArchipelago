@@ -23,11 +23,8 @@ public class ArchipelagoClient : MonoBehaviour {
     private ConcurrentQueue<ItemInfo> _itemQueue = new();
     public bool isAuthenticated = false;
     public ArchipelagoInfo apInfo = new ArchipelagoInfo();
-    public int slotID;
     public ArchipelagoSession session;
     public SlotData slotData;
-    public bool isInGame = false;
-    public RRStageController rrStageController;
     public bool freePlay = false;
     public List<string> unplayedSongs = [];
     public Dictionary<long, ScoutedItemInfo> locScouts = new Dictionary<long, ScoutedItemInfo>() {};
@@ -78,10 +75,13 @@ public class ArchipelagoClient : MonoBehaviour {
             session.Items.ItemReceived += Session_ItemReceived;
             session.Socket.PacketReceived += Socket_PacketRecived;
 
+            unplayedSongs.Add(slotData.goalSong);
             foreach(long location in session.Locations.AllMissingLocations) {
                 string locName = session.Locations.GetLocationNameFromId(location);
-                unplayedSongs.Add(slotData.goalSong);
-                unplayedSongs.Add(locName.Substring(0, locName.Length - 2));
+                locName = locName.Substring(0, locName.Length - 2);
+                if(!unplayedSongs.Contains(locName)) {
+                    unplayedSongs.Add(locName);
+                }
             }
 
             ProcessTrapData();

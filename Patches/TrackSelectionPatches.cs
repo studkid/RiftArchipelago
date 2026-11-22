@@ -24,6 +24,10 @@ namespace RiftArchipelago.Patches{
             if(filterOption == TrackFilterOption.UnplayedSongs) {
                 Log.Info("Sorting!");
                 __result = metadataToFilter.Where(delegate (ITrackMetadata d) {
+                    if(d.Category == TrackCategory.UgcLocal || d.Category == TrackCategory.UgcRemote) {
+                        return RiftAP.apClient.unplayedSongs.Contains($"{d.TrackName} [{d.LevelId}]");
+                    }
+
                     if(d.Category != TrackCategory.Tutorial) {
                         return RiftAP.apClient.unplayedSongs.Contains(d.TrackName) && RiftAP.apClient.itemHandler.IsUnlocked(d.TrackName);
                     }
