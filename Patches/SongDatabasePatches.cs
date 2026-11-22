@@ -15,18 +15,18 @@ namespace RiftArchipelago.Patches{
             // DLC Data Dump
             RiftAP.dynamicMetadataList = ____dynamicMetadataList;
 
-            if (!RiftAP.apClient.isAuthenticated || RiftAP.apClient.freePlay) return;
-
             foreach(LocalTrackMetadata song in ____dynamicMetadataList) {
                 foreach(LocalTrackDifficulty diff in song.DifficultyInformation) {
                     diff.UnlockCriteria = new TrackUnlockCriteria {
-                        Main = new UnlockCriteria()
+                        Main = new UnlockCriteria(),
+                        Remix = new UnlockCriteria()
                     };
+                    if (!RiftAP.apClient.isAuthenticated || RiftAP.apClient.freePlay) continue;
+
                     if (!RiftAP.apClient.itemHandler.dlcSongUnlocked.Contains(song.TrackName)) {
                         diff.UnlockCriteria.Main.Type = UnlockCriteriaType.AlwaysLocked;
                     }
 
-                    diff.UnlockCriteria.Remix = new UnlockCriteria();
                     // Log.Info($"{song.TrackName}: {!ItemHandler.dlcSongUnlocked.Contains(song.TrackName)}, {!ArchipelagoClient.slotData.remix}, {!ItemHandler.dlcRemixUnlocked.Contains(song.TrackName)}");
                     if((!RiftAP.apClient.itemHandler.dlcSongUnlocked.Contains(song.TrackName) && !RiftAP.apClient.slotData.remix) || !RiftAP.apClient.itemHandler.dlcRemixUnlocked.Contains(song.TrackName)) {
                         diff.UnlockCriteria.Remix.Type = UnlockCriteriaType.AlwaysLocked;

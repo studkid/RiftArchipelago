@@ -71,7 +71,7 @@ public class RiftAP : RiftPlugin {
         int i = 90;
         foreach(ITrackMetadata song in dynamicMetadataList) {
             using(StreamWriter output = new StreamWriter(Path.Combine(path, "dlcsongdata.txt"), true)) {
-                output.WriteLine($"\"{song.TrackName}\": SongData({i}, \"{song.TrackName}\", \"{song.Counterpart}\", {song.GetDifficulty(Difficulty.Easy).Intensity}, {song.GetDifficulty(Difficulty.Medium).Intensity}, {song.GetDifficulty(Difficulty.Hard).Intensity}, {song.GetDifficulty(Difficulty.Impossible).Intensity})");
+                output.WriteLine($"\"{song.TrackName}\": SongData({i}, \"{song.TrackName}\", \"{song.Counterpart}\", {song.GetDifficulty(Difficulty.Easy).Intensity}, {song.GetDifficulty(Difficulty.Medium).Intensity}, {song.GetDifficulty(Difficulty.Hard).Intensity}, {song.GetDifficulty(Difficulty.Impossible).Intensity}),");
             }
             i++;
         }
