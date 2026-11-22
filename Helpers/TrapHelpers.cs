@@ -63,7 +63,7 @@ namespace Helpers.RiftArchipelago {
     }
 
     internal static class TrapHelper {
-        public static Dictionary<string, int> trapCount = new Dictionary<string, int>() {
+        public static Dictionary<string, int> processedTrapCount = new Dictionary<string, int>() {
             {"Mystery Trap", 0},
             {"Gloom Trap", 0},
             {"Nightmare Trap", 0},

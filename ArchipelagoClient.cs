@@ -87,7 +87,7 @@ public class ArchipelagoClient : MonoBehaviour {
                 unplayedSongs.Add(locName.Substring(0, locName.Length - 2));
             }
 
-            // ProcessTrapData();
+            ProcessTrapData();
             
             return true;
         }
@@ -96,9 +96,13 @@ public class ArchipelagoClient : MonoBehaviour {
     }
 
     private void ProcessTrapData() {
-        foreach(string trap in TrapHelper.trapCount.Keys) {
-            session.DataStorage[trap].Initialize(0);
-            TrapHelper.trapCount[trap] = session.DataStorage[trap];
+        string[] keys = new string[TrapHelper.processedTrapCount.Keys.Count];
+        TrapHelper.processedTrapCount.Keys.CopyTo(keys, 0);
+        foreach(string trap in keys) {
+            session.DataStorage[Scope.Slot, trap].Initialize(0);
+            int count = session.DataStorage[Scope.Slot, trap];
+            TrapHelper.processedTrapCount[trap] = count;
+            Log.Info($"ProcessTrapData: {trap} {count}");
         }
     }
     
@@ -121,16 +125,15 @@ public class ArchipelagoClient : MonoBehaviour {
             _itemQueue.TryDequeue(out var item);
 
             Log.Info($"Item Recieved: {item.ItemDisplayName} | ID: {item.ItemId}");
-            Log.Info($"Slot Data Loaded: {slotData.remix}");
 
             if(item.ItemId == 1) { // Diamonds
                 itemHandler.AddDiamond();
             }
-            else if(item.ItemId >= 30 && item.ItemId < 50) {
+            else if(item.ItemId >= 20 && item.ItemId < 50) {
                 trapCount[item.ItemName]++;
-                if(trapCount[item.ItemName] > TrapHelper.trapCount[item.ItemName]) {
-                    TrapHelper.AddTrap(item.ItemName);
+                if(trapCount[item.ItemName] > TrapHelper.processedTrapCount[item.ItemName]) {
                     AddTrapToStorage(item.ItemName);
+                    TrapHelper.AddTrap(item.ItemName);
                     if(Config.Settings.Traplink) {
                         SendTrapLink(item.ItemName);
                     }
@@ -165,7 +168,9 @@ public class ArchipelagoClient : MonoBehaviour {
     }
 
     private void AddTrapToStorage(string trapName) {
-        session.DataStorage[trapName]++;
+        session.DataStorage[Scope.Slot, trapName] += 1;
+        int count = session.DataStorage[Scope.Slot, trapName];
+        Log.Info($"AddTrapToStorage: {count}");
     }
 
     private void SendTrapLink(string trapName) {
