@@ -86,4 +86,13 @@ namespace RiftArchipelago.Patches{
             TrapHelper.UpscrollTrap(__instance);
         }
     }
+
+    [HarmonyPatch(typeof(RRStageController), "Awake")]
+    public static class GetStageController {
+        public static void Postfix(RRStageController __instance) {
+            if(Config.Settings.Debug) {
+                RiftAP.apUI.stageController = __instance;
+            }
+        }
+    }
 }

@@ -15,6 +15,12 @@ using BossBattles;
 using System.Linq;
 using RiftOfTheNecroManager;
 using Helpers.RiftArchipelago;
+using Archipelago.MultiClient.Net.Models;
+using System.Collections.Concurrent;
+using UnityEngine;
+using TMPro;
+using UnityEngine.UI;
+using TicToc.Localization.Components;
 
 namespace RiftArchipelago.Patches {
     [HarmonyPatch(typeof(RRStageController), "CompleteStageAfterAllEnemiesHaveDiedRoutine")]
@@ -178,10 +184,14 @@ namespace RiftArchipelago.Patches {
 
 
             Log.Info($"Sending {stageDisplayName} {locId}");
+            long[] locsToCheck = [locId, locId + 1];
 
             if (locId != -1) {
                 RiftAP.apClient.unplayedSongs.Remove(stageDisplayName);
-                RiftAP.apClient.session.Locations.CompleteLocationChecksAsync([locId, locId + 1]);
+                RiftAP.apClient.session.Locations.CompleteLocationChecksAsync(locsToCheck);
+                foreach(long id in locsToCheck) {
+                    RiftAP.scoutQueue.Enqueue(id);
+                }
             }
         }
 
@@ -335,9 +345,13 @@ namespace RiftArchipelago.Patches {
             }
 
             Log.Info($"Sending {levelName} {locId}");
+            long[] locsToCheck = [locId, locId + 1];
 
             if (locId != -1) {
-                RiftAP.apClient.session.Locations.CompleteLocationChecksAsync([locId, locId + 1]);
+                RiftAP.apClient.session.Locations.CompleteLocationChecksAsync(locsToCheck);
+                foreach(long id in locsToCheck) {
+                    RiftAP.scoutQueue.Enqueue(id);
+                }
             }
         }
     }
@@ -350,5 +364,41 @@ namespace RiftArchipelago.Patches {
             __result = Task.FromResult(false);
             return !RiftAP.apClient.isAuthenticated;
         }
+    }
+
+    [HarmonyPatch(typeof(ScoreResultsView), "Update")]
+    public static class ModifyDiamondPopup {
+        private static void Postfix(ScoreResultsView __instance, GameObject ____diamondsRewardPopupObject, TMP_Text ____diamondsRewardText, bool ____isPerformingMenuAction, bool ____hasRevealedContinue, bool ____isAnimatingTallies, bool ____isAnimatingFinalScore, bool ____isShowingDiamondRewardPopup) {
+            if(____isPerformingMenuAction || ____hasRevealedContinue || ____isAnimatingTallies || ____isAnimatingFinalScore || ____isShowingDiamondRewardPopup || ____diamondsRewardPopupObject.activeSelf) return;
+
+            if(!RiftAP.scoutQueue.IsEmpty) {
+                RiftAP.scoutQueue.TryDequeue(out var location);
+                Log.Info($"ModifyDiamondPopup: Displaying item from {location}");
+
+                // Getting Diamond Popup Icon and Caption
+                Transform dialogBox = ____diamondsRewardPopupObject.transform.GetChild(0);
+                GameObject iconObject = dialogBox.GetChild(0).gameObject;
+                Image image = iconObject.GetComponent<Image>();
+                TextMeshProUGUI caption = dialogBox.GetChild(2).gameObject.GetComponent<TextMeshProUGUI>();
+                UITextMeshProLocalizer localizer = dialogBox.GetChild(2).gameObject.GetComponent<UITextMeshProLocalizer>();
+
+                Object.Destroy(localizer);
+                
+                ScoutedItemInfo itemInfo = RiftAP.apClient.locScouts[location];
+                caption.text = $"Sent {itemInfo.Player}'s";
+                ____diamondsRewardText.text = $"{itemInfo.ItemName}";
+                ____diamondsRewardText.autoSizeTextContainer = true;
+
+                Texture2D icon = RiftAP.apIcons[(int)itemInfo.Flags];
+
+                Sprite newSprite = Sprite.Create(icon, new Rect(image.sprite.rect.x, image.sprite.rect.y, icon.width, icon.height), new Vector2(0.5f, 0.5f));
+                newSprite.name = "APItemCover";
+                image.sprite = newSprite;
+
+                __instance._shouldShowDiamondsRewardPopup = true;
+                __instance._hasRevealedContinue = false;
+                __instance.ShowDiamondPopup();
+            }
+        }  
     }
 }

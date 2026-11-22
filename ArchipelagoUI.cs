@@ -1,4 +1,5 @@
 using Helpers.RiftArchipelago;
+using RhythmRift;
 using RiftArchipelago.Helpers;
 using RiftArchipelago.Patches;
 using Shared.RhythmEngine;
@@ -28,6 +29,7 @@ namespace RiftArchipelago{
         private const int LabelWidth = 120;
         private const int FieldGap = 8;
         private const int LineHeight = 22;
+        public RRStageController stageController;
 
         private static GUIStyle toggleLabelGapStyle;
 
@@ -230,7 +232,7 @@ namespace RiftArchipelago{
                 else if(Config.Settings.Debug) {
                     GUI.Label(new Rect(LeftPadding, 60, contentWidth, LineHeight), "Current Song: " + curStage);
                     if(GUI.Button(new Rect(LeftPadding, 80, 150, LineHeight), "Complete Song")) {
-                        RRCompleteStage.AP_RRLocationSend(curStage, "", Shared.Difficulty.Impossible, remix);
+                        stageController.CompleteStage();
                     }
                 }
             }

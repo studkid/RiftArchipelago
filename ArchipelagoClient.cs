@@ -2,7 +2,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Archipelago.MultiClient.Net;
-using Archipelago.MultiClient.Net.BounceFeatures.DeathLink;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
@@ -10,11 +9,9 @@ using Archipelago.MultiClient.Net.Packets;
 using RhythmRift;
 using UnityEngine;
 using RiftOfTheNecroManager;
-using HarmonyLib;
-using Newtonsoft.Json.Linq;
-using RiftArchipelago.Patches;
 using Helpers.RiftArchipelago;
 using Archipelago.MultiClient.Net.Converters;
+using System.Linq;
 
 namespace RiftArchipelago;
 
@@ -26,7 +23,6 @@ public class ArchipelagoClient : MonoBehaviour {
     private ConcurrentQueue<ItemInfo> _itemQueue = new();
     public bool isAuthenticated = false;
     public ArchipelagoInfo apInfo = new ArchipelagoInfo();
-    public ArchipelagoUI apUI = new ArchipelagoUI();
     public int slotID;
     public ArchipelagoSession session;
     public SlotData slotData;
@@ -34,6 +30,7 @@ public class ArchipelagoClient : MonoBehaviour {
     public RRStageController rrStageController;
     public bool freePlay = false;
     public List<string> unplayedSongs = [];
+    public Dictionary<long, ScoutedItemInfo> locScouts = new Dictionary<long, ScoutedItemInfo>() {};
     public static Dictionary<string, int> trapCount = new Dictionary<string, int>() {
             {"Mystery Trap", 0},
             {"Gloom Trap", 0},
@@ -88,6 +85,7 @@ public class ArchipelagoClient : MonoBehaviour {
             }
 
             ProcessTrapData();
+            GetLocationScouts();
             
             return true;
         }
@@ -96,14 +94,18 @@ public class ArchipelagoClient : MonoBehaviour {
     }
 
     private void ProcessTrapData() {
-        string[] keys = new string[TrapHelper.processedTrapCount.Keys.Count];
-        TrapHelper.processedTrapCount.Keys.CopyTo(keys, 0);
+        string[] keys = TrapHelper.processedTrapCount.Keys.ToArray();
         foreach(string trap in keys) {
             session.DataStorage[Scope.Slot, trap].Initialize(0);
             int count = session.DataStorage[Scope.Slot, trap];
             TrapHelper.processedTrapCount[trap] = count;
             Log.Info($"ProcessTrapData: {trap} {count}");
         }
+    }
+
+    private async void GetLocationScouts() {
+        long[] missingLocations = session.Locations.AllMissingLocations.ToArray();
+        locScouts = await session.Locations.ScoutLocationsAsync(HintCreationPolicy.None, missingLocations);
     }
     
     public void GoalGame() {

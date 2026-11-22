@@ -43,5 +43,19 @@
     <Reference Include="Unity.Mathematics">
       <HintPath>.\lib\Unity.Mathematics.dll</HintPath>
     </Reference>
+    <Reference Include="TicToc.Localization">
+      <HintPath>.\lib\TicToc.Localization.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Assets\filler-icon.png"/>
+    <EmbeddedResource Include="Assets\filler-icon.png"/>
+    <None Remove="Assets\progression-icon.png"/>
+    <EmbeddedResource Include="Assets\progression-icon.png"/>
+    <None Remove="Assets\trap-icon.png"/>
+    <EmbeddedResource Include="Assets\trap-icon.png"/>
+    <None Remove="Assets\useful-icon.png"/>
+    <EmbeddedResource Include="Assets\useful-icon.png"/>
   </ItemGroup>
 </Project>

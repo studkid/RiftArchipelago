@@ -9,6 +9,8 @@ using Shared.TrackData;
 using System.IO;
 using Shared;
 using System;
+using RiftArchipelago.Helpers;
+using System.Collections.Concurrent;
 
 namespace RiftArchipelago;
 
@@ -26,6 +28,8 @@ public class RiftAP : RiftPlugin {
     public static Dictionary<string, SongDatabaseData> songDatabaseDict;
     public static APState state;
     public static List<ITrackMetadata> dynamicMetadataList;
+    public static Texture2D[] apIcons;
+    public static ConcurrentQueue<long> scoutQueue = new();
 
     public static void ResetEverything() {
         foreach(SongDatabaseData song in songDatabaseDict.Values) {
@@ -43,6 +47,13 @@ public class RiftAP : RiftPlugin {
 
         songDatabaseDict = SongDatabase._songDatabaseDict;
         state = APState.Menu;
+
+        apIcons = [
+            AssetHelpers.LoadTexture("RiftArchipelago.Assets.filler-icon.png"),
+            AssetHelpers.LoadTexture("RiftArchipelago.Assets.progression-icon.png"),
+            AssetHelpers.LoadTexture("RiftArchipelago.Assets.useful-icon.png"),
+            AssetHelpers.LoadTexture("RiftArchipelago.Assets.trap-icon.png")
+        ];
 
         CreateClient();
         CreateUI();
