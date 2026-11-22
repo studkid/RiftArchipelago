@@ -90,7 +90,7 @@ namespace RiftArchipelago{
 
             // Draw panel group so the minimize button is part of the UI
             GUI.BeginGroup(new Rect(PanelX, PanelY, PanelWidth, panelHeight));
-            GUI.Box(new Rect(0, 0, PanelWidth, panelHeight), "Archipelago");
+            GUI.Box(new Rect(0, 0, PanelWidth, panelHeight), $"Archipelago {MyPluginInfo.PLUGIN_VERSION}");
 
             // Minimize button on the panel (top-right corner)
             if (GUI.Button(new Rect(PanelWidth - PanelPadding - 24, PanelPadding, 24, 20), "—")) {
@@ -102,7 +102,7 @@ namespace RiftArchipelago{
             // Status
             if (hasSession) {
                 if (isAuthed) {
-                    GUI.Label(new Rect(LeftPadding, 20, contentWidth, LineHeight), "Status: Connected");
+                    GUI.Label(new Rect(LeftPadding, 20, contentWidth, LineHeight), $"Status: Connected to {RiftAP.apClient.slotData.worldVersion}");
                 }
                 else if (failedLastAuthenticationAttempt) {
                     GUI.Label(new Rect(LeftPadding, 20, contentWidth, LineHeight), "Status: Authentication failed");
@@ -181,9 +181,6 @@ namespace RiftArchipelago{
                         hostInputCache = info.address;
                         slotInputCache = info.slot;
                         PlayerPrefs.Save();
-                        if(RiftAP.apClient.isAuthenticated) {
-                            // RiftAP.apClient.Setup();
-                        }
                     }
 
                     if(RiftAP.state == APState.SongMenu && Config.Settings.Debug) {
@@ -214,23 +211,32 @@ namespace RiftArchipelago{
                     };
                 }
 
-                GUI.Label(new Rect(LeftPadding, 40, contentWidth, LineHeight), "Goal Song: " + RiftAP.apClient.slotData.goalSong);
-                
+                ArchipelagoClient client = RiftAP.apClient;
+                GUI.Label(new Rect(LeftPadding, 40, contentWidth, LineHeight), "Goal Song: " + client.slotData.goalSong);
+                int offset = 0;
+                if(client.slotData.goalCondition != 1) {
+                    GUI.Label(new Rect(LeftPadding, 60, contentWidth, LineHeight), $"Diamonds {client.itemHandler.diamondCount}/{client.slotData.diamondGoal}");
+                    offset += 20;
+                }
+                if(client.slotData.goalCondition != 0) {
+                    GUI.Label(new Rect(LeftPadding, 60 + offset, contentWidth, LineHeight), $"Songs Cleared {client.GetSongsCleared()}/{client.slotData.songClearCount}");
+                    offset += 20;
+                }
 
                 if(RiftAP.state != APState.InGame) {
-                    if(GUI.Button(new Rect(LeftPadding, 60, 150, LineHeight), "Free Play: " + RiftAP.apClient.freePlay)) {
-                        RiftAP.apClient.freePlay = !RiftAP.apClient.freePlay;
-                        RiftAP.apClient.itemHandler.ResetLocked(RiftAP.apClient.freePlay);
+                    if(GUI.Button(new Rect(LeftPadding, 65 + offset, 150, LineHeight), "Free Play: " + client.freePlay)) {
+                        client.freePlay = !client.freePlay;
+                        client.itemHandler.ResetLocked(client.freePlay);
                     }
 
-                    if(GUI.Button(new Rect(LeftPadding, 85, 100, LineHeight), "Disconnect")) {
+                    if(GUI.Button(new Rect(LeftPadding, 90 + offset, 100, LineHeight), "Disconnect")) {
                         RiftAP.ResetEverything();
                         failedLastAuthenticationAttempt = false;
                     }
                 }
 
                 else if(Config.Settings.Debug) {
-                    GUI.Label(new Rect(LeftPadding, 60, contentWidth, LineHeight), "Current Song: " + curStage);
+                    GUI.Label(new Rect(LeftPadding, 65 + offset, contentWidth, LineHeight), "Current Song: " + curStage);
                     if(GUI.Button(new Rect(LeftPadding, 80, 150, LineHeight), "Complete Song")) {
                         stageController.CompleteStage();
                     }

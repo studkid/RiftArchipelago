@@ -27,6 +27,7 @@ public class ArchipelagoClient : MonoBehaviour {
     public SlotData slotData;
     public bool freePlay = false;
     public List<string> unplayedSongs = [];
+    public int totalSongs = 0;
     public Dictionary<long, ScoutedItemInfo> locScouts = new Dictionary<long, ScoutedItemInfo>() {};
     public static Dictionary<string, int> trapCount = new Dictionary<string, int>() {
             {"Mystery Trap", 0},
@@ -84,6 +85,8 @@ public class ArchipelagoClient : MonoBehaviour {
                 }
             }
 
+            totalSongs = session.Locations.AllLocations.Count() / 2;
+
             ProcessTrapData();
             GetLocationScouts();
             
@@ -114,6 +117,10 @@ public class ArchipelagoClient : MonoBehaviour {
             Status = ArchipelagoClientState.ClientGoal
         };
         session.Socket.SendPacket(statusUpdatePacket);
+    }
+
+    public int GetSongsCleared() {
+        return totalSongs - ((unplayedSongs.Count - 1) / 2);
     }
 
     private void Session_ItemReceived(ReceivedItemsHelper helper) {

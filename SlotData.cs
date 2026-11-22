@@ -6,13 +6,18 @@ namespace RiftArchipelago {
 
     public class SlotData {
         public int diamondGoal {get; private set;}
+        public int songClearCount {get; private set;}
+        public int goalCondition {get; private set;}
         public string goalSong {get; private set;}
         public string goalType {get; private set;}
+        public int startingHealth {get; private set;}
+        public int maxHealth {get; private set;}
         public Grade gradeNeeded {get; private set;}
         public bool remix {get; private set;}
         public int mgMode {get; private set;}
         public int bbMode {get; private set;}
         public bool fullComboNeeded {get; private set;}
+        public string worldVersion {get; private set;}
 
         public SlotData(Dictionary<string, object> slotData) {
             if(slotData.TryGetValue("diamondWinCount", out var diamond_goal)) {
@@ -21,8 +26,29 @@ namespace RiftArchipelago {
                 }
                 catch {
                     Log.Error("Failed to get diamondGoal from Slot Data.  Something went very wrong");
-                    diamondGoal = -1;
+                    diamondGoal = 0;
                 }
+            }
+            if(slotData.TryGetValue("songClearCount", out var song_clear_count)) {
+                try {
+                    songClearCount = ParseInt(song_clear_count);
+                }
+                catch {
+                    Log.Error("Failed to get songClearCount from Slot Data.  Something went very wrong.");
+                    songClearCount = 0;
+                }
+            }
+            if(slotData.TryGetValue("goalCondition", out var goal_condition)) {
+                try {
+                    goalCondition = ParseInt(goal_condition);
+                }
+                catch {
+                    Log.Error("Failed to get goalCondition from Slot Data.  Something went very wrong.");
+                    goalCondition = 0;
+                }
+            }
+            else { // Backwards Compat
+                goalCondition = 0;
             }
             if(slotData.TryGetValue("victoryLocation", out var victory)) {
                 try {
@@ -40,6 +66,15 @@ namespace RiftArchipelago {
                 catch {
                     Log.Error("Failed to get victoryType from Slot Data.  Something went very wrong");
                     goalType = "Rift";
+                }
+            }
+            if(slotData.TryGetValue("startingHealth", out var starting_health)) {
+                try {
+                    startingHealth = ParseInt(starting_health);
+                }
+                catch {
+                    Log.Error("Failed to get startingHealth from Slot Data.  Something went very wrong.");
+                    startingHealth = 10;
                 }
             }
             if(slotData.TryGetValue("remixes", out var remixes)) {
@@ -86,6 +121,19 @@ namespace RiftArchipelago {
                     Log.Error("Failed to get fullComboNeeded from Slot Data.  Something went very wrong");
                     fullComboNeeded = false;
                 }
+            }
+            if (slotData.TryGetValue("worldVersion", out var world_version)) {
+                try {
+                    worldVersion = (string) world_version;
+                }
+                catch {
+                    Log.Error("Failed to get world_version from Slot Data.  Something went very wrong.");
+                    worldVersion = "Unknown Version";
+                }
+            }
+            else {
+                Log.Error("Failed to get world_version from Slot Data.  Server is likely on an outdated world.  Server compatibility not guarenteed!");
+                worldVersion = "Unknown Version";
             }
         }
 
