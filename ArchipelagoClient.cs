@@ -54,14 +54,14 @@ public class ArchipelagoClient : MonoBehaviour {
 
         session = ArchipelagoSessionFactory.CreateSession(apInfo.address);
 
-        string[] tags = [];
+        List<string> tags = new List<string>();
 
         if(Config.Settings.Deathlink != DeathLinkType.Off) {
-            tags.AddItem("DeathLink" + Config.Settings.DeathLinkGroup);
+            tags.Add("DeathLink" + Config.Settings.DeathLinkGroup);
         }
 
         if(Config.Settings.Traplink) {
-            tags.AddItem("TrapLink");
+            tags.Add("TrapLink");
         }
         
         LoginResult loginResult = session.TryConnectAndLogin(
@@ -69,7 +69,7 @@ public class ArchipelagoClient : MonoBehaviour {
             apInfo.slot,
             ItemsHandlingFlags.AllItems,
             new Version(AP_VERSION[0], AP_VERSION[1], AP_VERSION[2]),
-            tags,
+            tags.ToArray(),
             "",
             apInfo.password
         );
@@ -87,7 +87,7 @@ public class ArchipelagoClient : MonoBehaviour {
                 unplayedSongs.Add(locName.Substring(0, locName.Length - 2));
             }
 
-            ProcessTrapData();
+            // ProcessTrapData();
             
             return true;
         }
@@ -152,6 +152,7 @@ public class ArchipelagoClient : MonoBehaviour {
     }
 
     public void SendDeathLink(string msg) {
+        Log.Info("SendDeathLink: " + msg);
         BouncedPacket packet = new BouncedPacket() {
             Tags = ["DeathLink" + Config.Settings.DeathLinkGroup],
             Data = new() {
@@ -230,6 +231,7 @@ public class ArchipelagoClient : MonoBehaviour {
                     source = (string)data["source"];
                     var cause = (string)data["cause"];
                     Log.Info($"{source} {cause}");
+                    DeathlinkHelper.sendDeath = true;
                     break;
             }
         }

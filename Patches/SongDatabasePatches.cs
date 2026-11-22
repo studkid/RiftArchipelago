@@ -89,9 +89,7 @@ namespace RiftArchipelago.Patches{
             foreach(LocalTrackMetadata song in refTrackList) {
                 string songName = $"{song.TrackName} [{song.LevelId}]"; 
 
-                Log.Info($"{song.TrackName} in List: {!RiftAP.apClient.itemHandler.customUnlocked.Contains(songName.Replace("\'", ""))}");
                 if(!RiftAP.apClient.itemHandler.customUnlocked.Contains(songName.Replace("\'", ""))) {
-                    Log.Info($"Removing {song.TrackName}");
                     ____customTrackMetadatas.Remove(song);
                 }
             }
