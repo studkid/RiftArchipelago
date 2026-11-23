@@ -21,8 +21,11 @@ public enum APState {
     CustomMenu,
 }
 
-[BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
+[BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, VERSION)]
+[NecroManagerInfo(menuNameOverride: MENU_NAME, isBeta: true)]
 public class RiftAP : RiftPlugin {
+    public const string VERSION = "1.0.0";
+    public const string MENU_NAME = "Rift Archipelago";
     public static ArchipelagoClient apClient;
     public static ArchipelagoUI apUI;
     public static Dictionary<string, SongDatabaseData> songDatabaseDict;
