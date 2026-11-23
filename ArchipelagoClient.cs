@@ -175,10 +175,15 @@ public class ArchipelagoClient : MonoBehaviour {
             if(item.ItemId == 1) { // Diamonds
                 AddDiamond();
             }
-            if(item.ItemId == 20) { // Max Health Increase
+            else if(item.ItemId >= 2 && item.ItemId <= 5) { // Food
+                if(RiftAP.state == APState.InGame) {
+                    ItemHelper.AddItem(item.ItemName);
+                }
+            }
+            else if(item.ItemId == 20) { // Max Health Increase
                 curMaxHealth += 1;
             }
-            else if(item.ItemId >= 30 && item.ItemId < 50) {
+            else if(item.ItemId >= 30 && item.ItemId < 50) { // Traps
                 trapCount[item.ItemName]++;
                 if(trapCount[item.ItemName] > TrapHelper.processedTrapCount[item.ItemName]) {
                     AddTrapToStorage(item.ItemName);

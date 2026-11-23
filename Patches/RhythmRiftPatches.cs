@@ -4,6 +4,7 @@ using HarmonyLib;
 using Helpers.RiftArchipelago;
 using Minigames;
 using RhythmRift;
+using RiftArchipelago.Helpers;
 using Shared.Pins;
 using Shared.SceneLoading.Payloads;
 
@@ -65,6 +66,9 @@ namespace RiftArchipelago.Patches{
 
             // Traps
             TrapHelper.RunTraps(__instance);
+
+            // Filler
+            ItemHelper.RunItems(__instance);
         }
     } 
 
