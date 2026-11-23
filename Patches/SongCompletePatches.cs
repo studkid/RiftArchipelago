@@ -21,6 +21,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using TicToc.Localization.Components;
+using RiftArchipelago.Helpers;
 
 namespace RiftArchipelago.Patches {
     [HarmonyPatch(typeof(RRStageController), "CompleteStageAfterAllEnemiesHaveDiedRoutine")]
@@ -294,7 +295,7 @@ namespace RiftArchipelago.Patches {
             IEnumerator Wrapper() {
                 yield return original;
 
-                string levelName = ItemHandler.extraMapping.FirstOrDefault(x => x.Value == ____stageScenePayload.GetLevelId()).Key;
+                string levelName = SongHelper.extraMapping.FirstOrDefault(x => x.Value == ____stageScenePayload.GetLevelId()).Key;
                 Difficulty difficulty = ____stageScenePayload.GetLevelDifficulty();
 
                 Log.Info("Minigame Cleared");
@@ -316,7 +317,7 @@ namespace RiftArchipelago.Patches {
             IEnumerator Wrapper() {
                 yield return original;
 
-                string levelName = ItemHandler.extraMapping.FirstOrDefault(x => x.Value == ____levelId).Key;
+                string levelName = SongHelper.extraMapping.FirstOrDefault(x => x.Value == ____levelId).Key;
                 Difficulty difficulty = ____stageScenePayload.GetLevelDifficulty();
 
                 Log.Info("Boss Battle Cleared");
@@ -335,6 +336,7 @@ namespace RiftArchipelago.Patches {
                 }
 
                 locId = RiftAP.apClient.session.Locations.GetLocationIdFromName("Rift of the Necrodancer", levelName + "-0");
+                RiftAP.apClient.unplayedSongs.Remove(levelName);
             }
             else if (mode == 2) {
                 if ($"{levelName} ({difficulty})" == RiftAP.apClient.slotData.goalSong) {
@@ -342,6 +344,7 @@ namespace RiftArchipelago.Patches {
                 }
 
                 locId = RiftAP.apClient.session.Locations.GetLocationIdFromName("Rift of the Necrodancer", $"{levelName} ({difficulty})-0");
+                RiftAP.apClient.unplayedSongs.Remove($"{levelName} ({difficulty})");
             }
 
             Log.Info($"Sending {levelName} {locId}");

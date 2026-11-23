@@ -11,7 +11,7 @@ namespace RiftArchipelago.Patches{
         [HarmonyPostfix]
         public static void PostFix(ref TMP_Text ____totalDiamondsText) {
             if(!RiftAP.apClient.isAuthenticated) return;
-            ____totalDiamondsText.text = $"x{RiftAP.apClient.itemHandler.diamondCount} / {RiftAP.apClient.slotData.diamondGoal}";
+            ____totalDiamondsText.text = $"x{RiftAP.apClient.diamondCount} / {RiftAP.apClient.slotData.diamondGoal}";
         }
     }
 

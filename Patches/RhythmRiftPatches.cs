@@ -72,7 +72,6 @@ namespace RiftArchipelago.Patches{
     public static class ModifyPins {
         [HarmonyPostfix]
         public static void PostFix(string pinName, ref bool __result) {
-
             if(TrapHelper.getTimer(pinName) > 0) {
                 __result = true;
             }
@@ -92,6 +91,10 @@ namespace RiftArchipelago.Patches{
         public static void Postfix(RRStageController __instance) {
             if(Config.Settings.Debug) {
                 RiftAP.apUI.stageController = __instance;
+            }
+
+            if (RiftAP.apClient.isAuthenticated) {
+                __instance._playerController.OverrideHealth(RiftAP.apClient.curMaxHealth, RiftAP.apClient.curMaxHealth);
             }
         }
     }

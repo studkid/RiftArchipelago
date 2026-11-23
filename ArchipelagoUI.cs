@@ -102,7 +102,7 @@ namespace RiftArchipelago{
             // Status
             if (hasSession) {
                 if (isAuthed) {
-                    GUI.Label(new Rect(LeftPadding, 20, contentWidth, LineHeight), $"Status: Connected to {RiftAP.apClient.slotData.worldVersion}");
+                    GUI.Label(new Rect(LeftPadding, 20, contentWidth, LineHeight), $"Status: Connected to {RiftAP.apClient.slotData.worldVersion.ToString(Newtonsoft.Json.Formatting.None)}");
                 }
                 else if (failedLastAuthenticationAttempt) {
                     GUI.Label(new Rect(LeftPadding, 20, contentWidth, LineHeight), "Status: Authentication failed");
@@ -215,7 +215,7 @@ namespace RiftArchipelago{
                 GUI.Label(new Rect(LeftPadding, 40, contentWidth, LineHeight), "Goal Song: " + client.slotData.goalSong);
                 int offset = 0;
                 if(client.slotData.goalCondition != 1) {
-                    GUI.Label(new Rect(LeftPadding, 60, contentWidth, LineHeight), $"Diamonds {client.itemHandler.diamondCount}/{client.slotData.diamondGoal}");
+                    GUI.Label(new Rect(LeftPadding, 60, contentWidth, LineHeight), $"Diamonds {client.diamondCount}/{client.slotData.diamondGoal}");
                     offset += 20;
                 }
                 if(client.slotData.goalCondition != 0) {

@@ -6,12 +6,12 @@ using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
 using Archipelago.MultiClient.Net.Models;
 using Archipelago.MultiClient.Net.Packets;
-using RhythmRift;
 using UnityEngine;
 using RiftOfTheNecroManager;
 using Helpers.RiftArchipelago;
 using Archipelago.MultiClient.Net.Converters;
 using System.Linq;
+using RiftArchipelago.Helpers;
 
 namespace RiftArchipelago;
 
@@ -19,7 +19,7 @@ public class ArchipelagoClient : MonoBehaviour {
     public int[] AP_VERSION = {0, 6, 7};
     public const string GAME_NAME = "Rift of the Necrodancer";
 
-    public ItemHandler itemHandler = new();
+    public SongHelper itemHandler = new();
     private ConcurrentQueue<ItemInfo> _itemQueue = new();
     public bool isAuthenticated = false;
     public ArchipelagoInfo apInfo = new ArchipelagoInfo();
@@ -29,6 +29,8 @@ public class ArchipelagoClient : MonoBehaviour {
     public List<string> unplayedSongs = [];
     public int totalSongs = 0;
     public Dictionary<long, ScoutedItemInfo> locScouts = new Dictionary<long, ScoutedItemInfo>() {};
+    public int diamondCount = 0;
+    public int curMaxHealth = 0;
     public static Dictionary<string, int> trapCount = new Dictionary<string, int>() {
             {"Mystery Trap", 0},
             {"Gloom Trap", 0},
@@ -59,6 +61,9 @@ public class ArchipelagoClient : MonoBehaviour {
             tags.Add("TrapLink");
         }
         
+        session.Items.ItemReceived += Session_ItemReceived;
+        session.Socket.PacketReceived += Socket_PacketRecived;
+
         LoginResult loginResult = session.TryConnectAndLogin(
             GAME_NAME,
             apInfo.slot,
@@ -73,9 +78,6 @@ public class ArchipelagoClient : MonoBehaviour {
             isAuthenticated = true;
             slotData = new SlotData(loginSuccess.SlotData);
 
-            session.Items.ItemReceived += Session_ItemReceived;
-            session.Socket.PacketReceived += Socket_PacketRecived;
-
             unplayedSongs.Add(slotData.goalSong);
             foreach(long location in session.Locations.AllMissingLocations) {
                 string locName = session.Locations.GetLocationNameFromId(location);
@@ -86,7 +88,9 @@ public class ArchipelagoClient : MonoBehaviour {
             }
 
             totalSongs = session.Locations.AllLocations.Count() / 2;
+            curMaxHealth = slotData.startingHealth;
 
+            itemHandler.Setup();
             ProcessTrapData();
             GetLocationScouts();
             
@@ -120,7 +124,40 @@ public class ArchipelagoClient : MonoBehaviour {
     }
 
     public int GetSongsCleared() {
-        return totalSongs - ((unplayedSongs.Count - 1) / 2);
+        return totalSongs - (unplayedSongs.Count - 1);
+    }
+
+    private void AddDiamond() {
+        diamondCount++;
+        Log.Info($"AddDiamond: Adding Diamond | New Total: {diamondCount}");
+
+        if(slotData.goalCondition != 1) {
+            CheckGoalRequirements();
+        }
+    }
+
+    public void ClearSong(string songName) {
+        RiftAP.apClient.unplayedSongs.Remove(songName);
+
+        if(slotData.goalCondition != 0) {
+            CheckGoalRequirements();
+        }
+    }
+
+    private void CheckGoalRequirements() {
+        Log.Info("Checking Goal Song Requirements...");
+
+        if(diamondCount < slotData.diamondGoal) {
+            return;
+        }
+        Log.Info("Diamond Goal Reached!");
+
+        if(GetSongsCleared() < slotData.songClearCount) {
+            return;
+        }
+        Log.Info("Song Clears Reached!");
+
+        itemHandler.UnlockGoalSong(slotData.goalSong, slotData.goalType);
     }
 
     private void Session_ItemReceived(ReceivedItemsHelper helper) {
@@ -136,9 +173,12 @@ public class ArchipelagoClient : MonoBehaviour {
             Log.Info($"Item Recieved: {item.ItemDisplayName} | ID: {item.ItemId}");
 
             if(item.ItemId == 1) { // Diamonds
-                itemHandler.AddDiamond();
+                AddDiamond();
             }
-            else if(item.ItemId >= 20 && item.ItemId < 50) {
+            if(item.ItemId == 20) { // Max Health Increase
+                curMaxHealth += 1;
+            }
+            else if(item.ItemId >= 30 && item.ItemId < 50) {
                 trapCount[item.ItemName]++;
                 if(trapCount[item.ItemName] > TrapHelper.processedTrapCount[item.ItemName]) {
                     AddTrapToStorage(item.ItemName);

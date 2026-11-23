@@ -4,12 +4,10 @@ using System.Linq;
 using RhythmRift;
 using RiftArchipelago;
 using RiftOfTheNecroManager;
-using Shared;
 using Unity.Mathematics;
 using UnityEngine;
 
 namespace Helpers.RiftArchipelago {
-
     internal class NightmareGloom {
         private System.Random randomGenerator = new System.Random();
         private int minSecondsBeforeChange = 20;
@@ -197,7 +195,7 @@ namespace Helpers.RiftArchipelago {
                 glassTimer--;
             }
             else if(glassTimer == 0) {
-                controller._playerController.OverrideHealth(lastPlayerHealth, 10);
+                controller._playerController.OverrideHealth(lastPlayerHealth, RiftAP.apClient.curMaxHealth);
                 controller.UpdateUI();
 
                 glassTimer--;

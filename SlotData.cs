@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 using RiftOfTheNecroManager;
 
 namespace RiftArchipelago {
@@ -11,13 +12,12 @@ namespace RiftArchipelago {
         public string goalSong {get; private set;}
         public string goalType {get; private set;}
         public int startingHealth {get; private set;}
-        public int maxHealth {get; private set;}
         public Grade gradeNeeded {get; private set;}
         public bool remix {get; private set;}
         public int mgMode {get; private set;}
         public int bbMode {get; private set;}
         public bool fullComboNeeded {get; private set;}
-        public string worldVersion {get; private set;}
+        public JArray worldVersion {get; private set;}
 
         public SlotData(Dictionary<string, object> slotData) {
             if(slotData.TryGetValue("diamondWinCount", out var diamond_goal)) {
@@ -124,16 +124,16 @@ namespace RiftArchipelago {
             }
             if (slotData.TryGetValue("worldVersion", out var world_version)) {
                 try {
-                    worldVersion = (string) world_version;
+                    worldVersion = (JArray) world_version;
                 }
                 catch {
                     Log.Error("Failed to get world_version from Slot Data.  Something went very wrong.");
-                    worldVersion = "Unknown Version";
+                    worldVersion = new JArray() {0,0,0};
                 }
             }
             else {
                 Log.Error("Failed to get world_version from Slot Data.  Server is likely on an outdated world.  Server compatibility not guarenteed!");
-                worldVersion = "Unknown Version";
+                worldVersion = new JArray() {0,0,0};
             }
         }
 
