@@ -22,6 +22,7 @@ using TMPro;
 using UnityEngine.UI;
 using TicToc.Localization.Components;
 using RiftArchipelago.Helpers;
+using System.Text.RegularExpressions;
 
 namespace RiftArchipelago.Patches {
     [HarmonyPatch(typeof(RRStageController), "CompleteStageAfterAllEnemiesHaveDiedRoutine")]
@@ -116,7 +117,7 @@ namespace RiftArchipelago.Patches {
                     if (VerifyCompletionRequirements(stageDisplayName, levelId, _stageScenePayload.GetLevelDifficulty(), SlotData.MapObjectToGrade(letter), wasFullCombo, _wereCheatsUsed)) {
                         Log.Info("Archipelago location verification validated");
                         if(isPlayingCustomTrack) {
-                            string songName = $"{stageDisplayName} [{levelId}]";
+                            string songName = $"{Regex.Replace(stageDisplayName, "</?\\w+.*?>", string.Empty)} [{levelId}]";
                             AP_RRLocationSend(songName.Replace("\'", ""), levelId, _stageScenePayload.GetLevelDifficulty(), _isRemixMode);
                         }
                         AP_RRLocationSend(stageDisplayName, levelId, _stageScenePayload.GetLevelDifficulty(), _isRemixMode);
@@ -165,7 +166,7 @@ namespace RiftArchipelago.Patches {
         }
 
         public static void AP_RRLocationSend(string stageDisplayName, string levelId, Difficulty difficulty, bool isRemixMode) {
-            long locId = -1;
+            long locId;
 
             if (!RiftAP.apClient.slotData.remix || !isRemixMode) {
                 if (stageDisplayName == RiftAP.apClient.slotData.goalSong)
