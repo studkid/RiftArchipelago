@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <AssemblyName>RiftArchipelago</AssemblyName>
     <Product>Riftipelago</Product>
-    <Version>1.0.0-beta</Version>
+    <Version>1.0.1-beta</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>

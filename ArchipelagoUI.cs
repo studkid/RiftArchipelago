@@ -79,7 +79,15 @@ namespace RiftArchipelago{
             bool showConnectedMenu = inMenu && hasSession;
 
             int panelHeight = 60; // base for status only
-            if (showLogin) panelHeight = 160;
+            int hintTextOffset = 0;
+            if (showLogin && RiftAP.state == APState.CustomMenu) {
+                panelHeight = 180;
+                hintTextOffset = 25;
+            }
+            else if (showLogin) {
+                panelHeight = 155;
+                hintTextOffset = 0;
+            }
             else if (showConnectedMenu) panelHeight = 120;
 
             // Precompute column positions to avoid overflow
@@ -191,11 +199,14 @@ namespace RiftArchipelago{
 
                     if(RiftAP.state == APState.CustomMenu) {
                         if(GUI.Button(new Rect(130, 110, 170, LineHeight), "Dump Favorited Songs")) {
-                            CustomSongHelpers.saveCustomData();
+                            CustomSongHelpers.saveCustomData(true);
+                        }
+                        if(GUI.Button(new Rect(130, 135, 170, LineHeight), "Dump All Songs")) {
+                            CustomSongHelpers.saveCustomData(false);
                         }
                     }
 
-                    GUI.Label(new Rect(labelX, 140, 250, LineHeight), "Press Left Alt to Reveal Cursor.");
+                    GUI.Label(new Rect(labelX, 135 + hintTextOffset, 250, LineHeight), "Press Left Alt to Reveal Cursor.");
                 }
             }
             else if(RiftAP.apClient.session != null) {
